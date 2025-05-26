@@ -34,7 +34,7 @@
         \item $d_{i,j}$ shortest path distance from node $i$ to $j$.
     \end{itemize}
 
-    and this decision variables:
+    and those decision variables:
     \begin{itemize}
         \item $x_i \in \{0,1\}$, a binary variable equal to one if a device is installed at node $i \in N$, zero otherwise.
         \item $y_{i,j} \in \{0,1\}$, a binary variable equal to one if $i \in N$ is served by a device a device at node $j \in N$.
@@ -45,7 +45,7 @@
         \min \sum_{i \in N} c_i x_i
     \end{equation}
 
-    and is subjec to the following constraints:
+    and is subject to the following constraints:
     \begin{itemize}
         \item Coverage constraint: Each node must be served by exactly one device:
         \[
@@ -69,20 +69,20 @@
 
 
     \subsection*{Question 2}
-    \textit{Design a heuristic to compute a feasible solution for the problem. Code it in AMPL and solve the instances on the webeep. Report the value of the cost of the heuristic solution and the computational time. Describe the heuristic in a .pdf file. Upload the .mod and .run files, and a .pdf with the heuristic description and the result for each instance.}
+    \textit{Design a heuristic to compute a feasible solution for the problem. Code it in AMPL and solve the instances on the webeep. Report the value of the cost of the heuristic solution and the computational time. Describe the heuristic in a \texttt{.pdf} file. Upload the \texttt{.mod} and \texttt{.run} files, and a .pdf with the heuristic description and the result for each instance.}
 
     \subsection*{Question 3}
-    \textit{The problem described in Question 1 can be represented as a classical optimization problem: which one? Describe on a .pdf file the procedure to transform an instance of the problem into an instance of the classical problem and upload the .pdf file.}
+    \textit{The problem described in Question 1 can be represented as a classical optimization problem: which one? Describe on a \texttt{.pdf} file the procedure to transform an instance of the problem into an instance of the classical problem and upload the \texttt{.pdf} file.}
 
     \subsection*{Question 4}
-    \textit{A telecommunication network is described by a directed graph $G=(N,A)$. The nodes generate data for network diagnosis, which must be collected in nodes equipped with processing devices. Node $k \in N$ generates an amount of data $d_k$. Devices can be installed on any node in $N$ and installing a device in node $i \in N$ costs $c_i$ and can treat an amount of data $cap_i$. A single path must be selected between a node and the corresponding device. To guarantee a timely reaction to failures, the data must be received quickly: the overall propagation delay of the path from the source node to the processing node can be at most $T$ milliseconds. The propagation delay on each arc $(i,j)$ is $t_{i,j}$ milliseconds. The capacity needed on the arcs of the graph is provided by means of transportation channels, each with a capacity $u$. Installing one transportation channel on arc $(i,j) \in A$ costs $g_{i,j}$. We have to decide the number of transportation channels installed on each arc. Formulate the problem of minimizing the overall device and channel costs. Implement the model in AMPL and solve the instances in directory q4-instances on the webeep with a solver. Use parameter names as described in the file Q4-parameters.mod.  Upload the .run and .mod files, and a .pdf file with the model and the optimal value for each instance.}
+    \textit{A telecommunication network is described by a directed graph $G=(N,A)$. The nodes generate data for network diagnosis, which must be collected in nodes equipped with processing devices. Node $k \in N$ generates an amount of data $d_k$. Devices can be installed on any node in $N$ and installing a device in node $i \in N$ costs $c_i$ and can treat an amount of data $cap_i$. A single path must be selected between a node and the corresponding device. To guarantee a timely reaction to failures, the data must be received quickly: the overall propagation delay of the path from the source node to the processing node can be at most $T$ milliseconds. The propagation delay on each arc $(i,j)$ is $t_{i,j}$ milliseconds. The capacity needed on the arcs of the graph is provided by means of transportation channels, each with a capacity $u$. Installing one transportation channel on arc $(i,j) \in A$ costs $g_{i,j}$. We have to decide the number of transportation channels installed on each arc. Formulate the problem of minimizing the overall device and channel costs. Implement the model in AMPL and solve the instances in directory q4-instances on the webeep with a solver. Use parameter names as described in the file \texttt{Q4-parameters.mod}.  Upload the \texttt{.run} and \texttt{.mod} files, and a \texttt{.pdf} file with the model and the optimal value for each instance.}
 
 
     \subsection*{Question 5}
-    \textit{How can the cutset inequalities for network design be applied to the problem described in 4? Generate all the single node cutset-based inequalities (those that consider the cuts separating each single node from the others). Add them to the formulation and compute the continuous relaxation with and without them. Compare the two relaxations solving the instances. Are the inequalities effective? Upload the .run and .mod files, and a .pdf file with the updated model and the comparison of the two continuous relaxations.}
+    \textit{How can the cutset inequalities for network design be applied to the problem described in 4? Generate all the single node cutset-based inequalities (those that consider the cuts separating each single node from the others). Add them to the formulation and compute the continuous relaxation with and without them. Compare the two relaxations solving the instances. Are the inequalities effective? Upload the \texttt{.run} and \texttt{.mod} files, and a \texttt{.pdf} file with the updated model and the comparison of the two continuous relaxations.}
 
     \section*{Question 6}
-    \textit{How can the cover inequalities for the knapsack problem be applied to the problem described in 4? Generate heuristically some cover-based inequalities, add them to the formulation and compute the continuous relaxation with and without them for all the instances. Are they effective? Upload the .run and .mod files, and a .pdf with the results and the updated model.}
+    \textit{How can the cover inequalities for the knapsack problem be applied to the problem described in 4? Generate heuristically some cover-based inequalities, add them to the formulation and compute the continuous relaxation with and without them for all the instances. Are they effective? Upload the \texttt{.run} and \texttt{.mod} files, and a \texttt{.pdf} with the results and the updated model.}
 
 \end{document}
 
