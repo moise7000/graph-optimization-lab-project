@@ -28,7 +28,6 @@ graph-optimization-lab-project/
 └── README.md                     
 ```
 
----
 
 ## How to Run the Model
 
@@ -41,14 +40,14 @@ To run the AMPL model for Question 1:
    ```
 3. The script will read `qX-model.mod` and apply it to provided instances.
 
----
+
 
 ## Dependencies
 
 - [AMPL](https://ampl.com/) — Modeling language for mathematical programming
 - [LaTeX](https://www.latex-project.org/) — Used to generate the report
 
----
+
 
 
 ## License
