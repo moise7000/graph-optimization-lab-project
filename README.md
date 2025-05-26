@@ -1,9 +1,9 @@
 # Politecnico di Milano - Graph Optimmization - 2025
 This repository contains the files and resources for an optimization project involving model formulation and solving graph-based problems using AMPL.
 
----
 
-## 📁 Project Structure
+
+## Project Structure
 
 ```
 graph-optimization-lab-project/
