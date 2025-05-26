@@ -1,0 +1,44 @@
+reset;
+
+model "Q4-parameters.mod";
+
+model "q4-model.mod";
+
+problem q4: x, y, z, w, TotalCost, Assignment, NodeCapacity, ArcCapacity, Latency, Flow;
+option solver 'gurobi';
+option solver_msg 0;
+
+reset data;
+data "q4-i1.dat";
+solve q4;
+printf "Instance 1 total Cost: %g\n", TotalCost;
+
+reset data;
+data "q4-i2.dat";
+solve q4;
+printf "Instance 2 total Cost: %g\n", TotalCost;
+
+reset data;
+data "q4-i3.dat";
+solve q4;
+printf "Instance 3 total Cost: %g\n", TotalCost;
+
+reset data;
+data "q4-i4.dat";
+solve q4;
+printf "Instance 4 total Cost: %g\n", TotalCost;
+
+reset data;
+data "q4-i5.dat";
+solve q4;
+printf "Instance 5 total Cost: %g\n", TotalCost;
+
+reset data;
+data "q4-i6.dat";
+solve q4;
+printf "Instance 6 total Cost: %g\n", TotalCost;
+
+reset data;
+data "q4-i7.dat";
+solve q4;
+printf "Instance 7 total Cost: %g\n", TotalCost;
