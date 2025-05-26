@@ -2,11 +2,12 @@
 %! Date = 5/26/25
 
 % Preamble
-\documentclass[11pt]{article}
+\documentclass[10pt]{article}
 
 % Packages
 \usepackage{amsmath}
 \usepackage[utf8]{inputenc}
+\usepackage{verbatim}
 
 \title{Graph optimization \\ Lab Project}
 \author{Ewan Decima }
@@ -20,8 +21,52 @@
 
     \subsection*{Question 1}
     \textit{A telecommunication network is described by an undirected graph $G=(N,E)$. The nodes generate data for network diagnosis, which must be collected in nodes equipped with processing devices. Devices can be installed on any node in $N$ and installing a device in node $i \in N$ costs $c_i$. To guarantee a timely reaction to failures, the data must be received quickly: the overall propagation delay of the path from the source node to the processing node can be at most $T$ milliseconds. The propagation delay on each arc $(i,j)$ is $t_{i,j}$ milliseconds. Formulate the problem of selecting the minimum cost subset of nodes on which to install a device, so as to guarantee that the data for the network diagnosis can be sent to a device within the given time threshold.
-    Solve the instances in the directory q1-instances on the webeep with a solver. Use parameter names as described in the file Q1-parameters.mod.
-    Report, for each instance, the model formulation, the optimal value found and the selected nodes. Can the solver always find the optimal solution in reasonable time? Upload the .mod and .run files, and a .pdf with the model and the result for each instance.}
+    Solve the instances in the directory q1-instances on the webeep with a solver. Use parameter names as described in the file \texttt{Q1-parameters.mod}.
+    Report, for each instance, the model formulation, the optimal value found and the selected nodes. Can the solver always find the optimal solution in reasonable time? Upload the \texttt{.mod} and \texttt{.run} files, and a \texttt{.pdf} with the model and the result for each instance.}
+
+    \vspace{1 cm}
+    Let's write down the model. First we have the following sets and parameters:
+    \begin{itemize}
+        \item $N$ set of nodes in the network.
+        \item $E$ set of edges in the network.
+        \item $c_i$ cost of installing a device at node $i \in N$.
+        \item $t_{i,j}$ propagation delay on edge $(i,j) \in E$.
+        \item $d_{i,j}$ shortest path distance from node $i$ to $j$.
+    \end{itemize}
+
+    and this decision variables:
+    \begin{itemize}
+        \item $x_i \in \{0,1\}$, a binary variable equal to one if a device is installed at node $i \in N$, zero otherwise.
+        \item $y_{i,j} \in \{0,1\}$, a binary variable equal to one if $i \in N$ is served by a device a device at node $j \in N$.
+    \end{itemize}
+
+    The objective function is then
+    \begin{equation}
+        \min \sum_{i \in N} c_i x_i
+    \end{equation}
+
+    and is subjec to the following constraints:
+    \begin{itemize}
+        \item Coverage constraint: Each node must be served by exactly one device:
+        \[
+            \sum_{j \in N} y_{i,j} = 1 \qquad \forall i \in N
+        \]
+        \item Service constraint: A node can only be served by an installed device:
+        \[
+            y_{i,j} \le x_j \qquad \forall i,j \in N
+        \]
+        \item Distance constraint: Service only allowed within time threshold:
+        \[
+            y_{i,j} \times d_{i,j} \le T \qquad \forall i,j \in N
+        \]
+    \end{itemize}
+
+
+
+
+
+
+
 
     \subsection*{Question 2}
     \textit{Design a heuristic to compute a feasible solution for the problem. Code it in AMPL and solve the instances on the webeep. Report the value of the cost of the heuristic solution and the computational time. Describe the heuristic in a .pdf file. Upload the .mod and .run files, and a .pdf with the heuristic description and the result for each instance.}
@@ -44,4 +89,3 @@
 
 
 
-\end{document}
