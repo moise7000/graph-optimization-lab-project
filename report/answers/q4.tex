@@ -1,0 +1,58 @@
+\subsection*{Question 4}
+
+\subsubsection*{Parameters}
+
+\begin{itemize}
+	\item $G = (N, A)$: the directed graph with nodes $N$ and arcs $A$.
+	\item $d_k$: data to send from node $k \in N$.
+	\item $c_i$: cost of installing devices at node $i \in N$.
+	\item $cap_i$: capacity of devices installed at node $i \in N$.
+	\item $T$: maximum allowed propagation time for data.
+	\item $t_{ij}$: propagation delay on arc $(i, j) \in A$.
+	\item $g_{ij}$: cost of installing channels on arc $(i, j) \in A$.
+	\item $u$: capacity of each channel installed on arcs $(i, j) \in A$.
+\end{itemize}
+
+\subsubsection*{Decision Variables}
+
+\begin{itemize}
+	\item $x_{ij}$ binary: one if data is sent from node $i$ to node $j$, zero otherwise.
+	\item $y_{ij}^k$ binary: one if data from node $k$ is sent on arc $(i, j)$, zero otherwise.
+	\item $z_i$ integer: number of devices installed at node $i$.
+	\item $w_{ij}$ integer: number of channels installed on arc $(i, j)$.
+\end{itemize}
+
+\subsubsection*{Constraints}
+
+\begin{enumerate}
+	\item Each node must send its data to exactly one other node.
+	\item For each node, enough devices must be installed to handle the data sent to it.
+	\item For each arc, enough channels must be installed to handle the data sent on that arc.
+	\item The propagation time must not exceed the maximum allowed time.
+	\item Flow constraints: ensure that one and only one path from node $k$ to node $l$ exists if $x_{kl} = 1$; ensure that no data is sent if a node sends data to itself.
+\end{enumerate}
+
+\subsubsection*{Model}
+
+\begin{align*}
+    \min \quad & \sum_{i \in N} c_i z_i + \sum_{(i, j) \in A} g_{ij} w_{ij} & \\
+	\\
+    \text{s.t.} \quad &  \\
+	1. \quad & \sum_{j \in N} x_{ij} = 1 \quad \forall i \in N  \\
+	2. \quad & \sum_{i \in N} d_i x_{ij} \le cap_j \; z_j \quad \forall j \in N  \\
+	3. \quad & \sum_{k \in N} d_k y_{ij}^k \le u \; w_{ij} \quad \forall (i, j) \in A \quad  \\
+	4. \quad & \sum_{(i, j) \in A} y_{ij}^k t_{ij} \le T \quad \forall k \in N  \\
+	5. \quad & \sum_{j \in N \mid (i, j) \in A} y_{ij}^s \; - \sum_{j \in N \mid (j, i) \in A} y_{ji}^s = x_{st} \cdot \left\{
+	\begin{array}{rl}
+		0  & \text{if } s = t \vee i \notin\{s, t\}  \\
+		1  & \text{if } s \ne t \land i = s  \\
+		-1 & \text{if } s \ne t \land i = t
+	\end{array}
+	\right.
+	\quad \forall i \in N, \; s \in N, \; t \in N  \\
+	\\
+	& x_{ij} \in \{0, 1\}  \\
+	& y_{ij}^k \in \{0, 1\}  \\
+	& z_i \in \mathbb{Z}^+  \\
+	& w_{ij} \in \mathbb{Z}^+
+\end{align*}
