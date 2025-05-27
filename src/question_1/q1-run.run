@@ -1,0 +1,89 @@
+# Q1 Run file
+
+# Reset AMPL
+reset;
+
+# Load the model
+model Q1-model.mod;
+
+# Load the data
+data q1-instance-1.dat;
+
+# Compute shortest path distances using Floyd-Warshall algorithm
+# Initialize distance matrix
+for {i in N, j in N: i != j} {
+    let d[i,j] := 999999;
+}
+
+# Set diagonal to 0 (self-service)
+for {i in N} {
+    let d[i,i] := 0;
+}
+
+# Set direct edge distances
+for {(i,j) in E} {
+    let d[i,j] := t[i,j];
+    let d[j,i] := t[i,j];  # Since graph is undirected
+}
+
+# Floyd-Warshall algorithm to compute all shortest paths
+for {k in N} {
+    for {i in N} {
+        for {j in N} {
+            if d[i,k] + d[k,j] < d[i,j] then
+                let d[i,j] := d[i,k] + d[k,j];
+        }
+    }
+}
+
+# Display the distance matrix (optional, for debugging)
+printf "Distance matrix:\n";
+for {i in N} {
+    for {j in N} {
+        printf "%8.3f ", d[i,j];
+    }
+    printf "\n";
+}
+printf "\n";
+
+
+option solver 'gurobi';
+option solver_msg 0;
+
+
+# Solve the problem
+solve;
+
+# Display results
+printf "\n=== SOLUTION RESULTS ===\n";
+printf "Objective value (total cost): %.2f\n", TotalCost;
+printf "\nDevices installed at nodes:\n";
+for {i in N: x[i] > 0.5} {
+    printf "Node %d (cost: %.2f)\n", i, c[i];
+}
+
+printf "\nNode assignments:\n";
+for {i in N} {
+    for {j in N: y[i,j] > 0.5} {
+        printf "Node %d served by device at node %d (distance: %.3f)\n", i, j, d[i,j];
+    }
+}
+
+printf "\nSolution verification:\n";
+printf "Maximum distance: %.3f (threshold: %.0f)\n", 
+    max{i in N, j in N: y[i,j] > 0.5} d[i,j], T;
+
+# Check if solution is feasible
+printf "Total devices installed: %d\n", sum{i in N} x[i];
+printf "Total nodes covered: %d\n", sum{i in N, j in N} y[i,j];
+
+printf "Detailed assignments:\n";
+for {i in N} {
+    printf "Node %d: ", i;
+    for {j in N: y[i,j] > 0.5} {
+        printf "served by node %d (distance %.3f, cost %.2f)\n", j, d[i,j], c[j];
+        break;
+    }
+}
+
+printf "\n=== END RESULTS ===\n";
