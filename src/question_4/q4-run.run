@@ -8,25 +8,47 @@ problem q4: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint
 option solver 'gurobi';
 option solver_msg 0;
 
-set server;
 for {inst in 1..7} {
 	reset data;
-	if inst = 1 then {
+	if inst == 1 then {
 		data "q4-i1.dat";
-	} else if inst = 2 then {
+	} else if inst == 2 then {
 		data "q4-i2.dat";
-	} else if inst = 3 then {
+	} else if inst == 3 then {
 		data "q4-i3.dat";
-	} else if inst = 4 then {
+	} else if inst == 4 then {
 		data "q4-i4.dat";
-	} else if inst = 5 then {
+	} else if inst == 5 then {
 		data "q4-i5.dat";
-	} else if inst = 6 then {
+	} else if inst == 6 then {
 		data "q4-i6.dat";
-	} else if inst = 7 then {
+	} else if inst == 7 then {
 		data "q4-i7.dat";
 	}
 
 	solve q4;
-	printf "Instance %d total Cost: %g\n", inst, TotalCost;
+	printf "Instance %d       \n", inst;
+	printf "Total cost: %3g\n", TotalCost;
+	printf "Solving time: %.3f seconds\n", _solve_time;
+
+	printf "\nAssignments:\n";
+	for {i in N} {
+		printf "%2d -> %2d\n", i, sum{j in N} j * x[i, j];
+	}
+
+	printf "\nNumber of installed devices:\n";
+	for {i in N} {
+		if y[i] > 0 then {
+			printf "%2d: %d\n", i, y[i];
+		}
+	}
+
+	printf "\nNumber of installed channels:\n";
+	for {(i, j) in A} {
+		if z[i, j] > 0 then {
+			printf "%2d -> %2d: %d\n", i, j, z[i, j];
+		}
+	}
+
+	printf "\n----------------------------\n\n";
 }
