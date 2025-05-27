@@ -4,41 +4,29 @@ model "Q4-parameters.mod";
 
 model "q4-model.mod";
 
-problem q4: x, y, z, w, TotalCost, Assignment, NodeCapacity, ArcCapacity, Latency, Flow;
+problem q4: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity;
 option solver 'gurobi';
 option solver_msg 0;
 
-reset data;
-data "q4-i1.dat";
-solve q4;
-printf "Instance 1 total Cost: %g\n", TotalCost;
+set server;
+for {inst in 1..7} {
+	reset data;
+	if inst = 1 then {
+		data "q4-i1.dat";
+	} else if inst = 2 then {
+		data "q4-i2.dat";
+	} else if inst = 3 then {
+		data "q4-i3.dat";
+	} else if inst = 4 then {
+		data "q4-i4.dat";
+	} else if inst = 5 then {
+		data "q4-i5.dat";
+	} else if inst = 6 then {
+		data "q4-i6.dat";
+	} else if inst = 7 then {
+		data "q4-i7.dat";
+	}
 
-reset data;
-data "q4-i2.dat";
-solve q4;
-printf "Instance 2 total Cost: %g\n", TotalCost;
-
-reset data;
-data "q4-i3.dat";
-solve q4;
-printf "Instance 3 total Cost: %g\n", TotalCost;
-
-reset data;
-data "q4-i4.dat";
-solve q4;
-printf "Instance 4 total Cost: %g\n", TotalCost;
-
-reset data;
-data "q4-i5.dat";
-solve q4;
-printf "Instance 5 total Cost: %g\n", TotalCost;
-
-reset data;
-data "q4-i6.dat";
-solve q4;
-printf "Instance 6 total Cost: %g\n", TotalCost;
-
-reset data;
-data "q4-i7.dat";
-solve q4;
-printf "Instance 7 total Cost: %g\n", TotalCost;
+	solve q4;
+	printf "Instance %d total Cost: %g\n", inst, TotalCost;
+}

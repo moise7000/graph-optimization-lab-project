@@ -17,9 +17,9 @@
 
 \begin{itemize}
 	\item $x_{ij}$ binary: one if data is sent from node $i$ to node $j$, zero otherwise.
-	\item $y_{ij}^k$ binary: one if data from node $k$ is sent on arc $(i, j)$, zero otherwise.
-	\item $z_i$ integer: number of devices installed at node $i$.
-	\item $w_{ij}$ integer: number of channels installed on arc $(i, j)$.
+	\item $y_i$ integer: number of devices installed at node $i$.
+	\item $z_{ij}$ integer: number of channels installed on arc $(i, j)$.
+	\item $w_{ij}^k$ binary: one if data from node $k$ is sent on arc $(i, j)$, zero otherwise.
 \end{itemize}
 
 \subsubsection*{Constraints}
@@ -35,24 +35,23 @@
 \subsubsection*{Model}
 
 \begin{align*}
-    \min \quad & \sum_{i \in N} c_i z_i + \sum_{(i, j) \in A} g_{ij} w_{ij} & \\
+    \min \quad & \sum_{i \in N} c_i y_i + \sum_{(i, j) \in A} g_{ij} z_{ij} & \\
 	\\
     \text{s.t.} \quad &  \\
-	1. \quad & \sum_{j \in N} x_{ij} = 1 \quad \forall i \in N  \\
-	2. \quad & \sum_{i \in N} d_i x_{ij} \le cap_j \; z_j \quad \forall j \in N  \\
-	3. \quad & \sum_{k \in N} d_k y_{ij}^k \le u \; w_{ij} \quad \forall (i, j) \in A \quad  \\
-	4. \quad & \sum_{(i, j) \in A} t_{ij} y_{ij}^k \le T \quad \forall k \in N  \\
-	5. \quad & \sum_{j \in N \mid (i, j) \in A} y_{ij}^a \; - \sum_{j \in N \mid (j, i) \in A} y_{ji}^a = \left\{
+	1. \quad & \sum_{i \in N} x_{ki} = 1 \quad \forall k \in N  \\
+	2. \quad & \sum_{k \in N} d_k \; x_{ki} \le cap_i \; y_i \quad \forall i \in N  \\
+	3. \quad & \sum_{k \in N} d_k \; w_{ij}^k \le u \; z_{ij} \quad \forall (i, j) \in A \quad  \\
+	4. \quad & \sum_{(i, j) \in A} t_{ij} \; w_{ij}^k \le T \quad \forall k \in N  \\
+	5. \quad & \sum_{j \in N \mid (i, j) \in A} w_{ij}^k \; - \sum_{j \in N \mid (j, i) \in A} w_{ji}^k = \left\{
 	\begin{array}{rl}
-		0  & \text{if } a = b \vee i \notin\{a, b\}  \\
-		x_{ab}  & \text{if } a \ne b \land i = a  \\
-		-x_{ab} & \text{if } a \ne b \land i = b
+		(1 - x_{kk}) & \text{if } i = k  \\
+		-x_{ki} & \text{if } i \ne k
 	\end{array}
 	\right.
-	\quad \forall i \in N, \; a \in N, \; b \in N  \\
+	\quad \forall k \in N, \; i \in N  \\
 	\\
 	& x_{ij} \in \{0, 1\}  \\
-	& y_{ij}^k \in \{0, 1\}  \\
+	& y_{ij} \in \mathbb{Z}^+  \\
 	& z_i \in \mathbb{Z}^+  \\
-	& w_{ij} \in \mathbb{Z}^+
+	& w_{ij}^k \in \{0, 1\}
 \end{align*}
