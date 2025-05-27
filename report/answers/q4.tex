@@ -16,7 +16,7 @@
 \subsubsection*{Decision Variables}
 
 \begin{itemize}
-	\item $x_{ij}$ binary: one if data is sent from node $i$ to node $j$, zero otherwise.
+	\item $x_{ki}$ binary: one if data is sent from node $k$ to node $i$, zero otherwise.
 	\item $y_i$ integer: number of devices installed at node $i$.
 	\item $z_{ij}$ integer: number of channels installed on arc $(i, j)$.
 	\item $w_{ij}^k$ binary: one if data from node $k$ is sent on arc $(i, j)$, zero otherwise.
@@ -29,7 +29,7 @@
 	\item For each node, enough devices must be installed to handle the data sent to it.
 	\item For each arc, enough channels must be installed to handle the data sent on that arc.
 	\item The propagation time must not exceed the maximum allowed time.
-	\item Flow constraints: ensure that one and only one path from node $a$ to node $b$ exists if $x_{ab} = 1$; ensure that no data is sent if a node sends data to itself.
+	\item Flow constraints: ensure that one and only one path from node $k$ to node $i$ exists if $x_{ki} = 1$; ensure that no data is sent on the network if a node sends data to itself.
 \end{enumerate}
 
 \subsubsection*{Model}
@@ -50,8 +50,8 @@
 	\right.
 	\quad \forall k \in N, \; i \in N  \\
 	\\
-	& x_{ij} \in \{0, 1\}  \\
-	& y_{ij} \in \mathbb{Z}^+  \\
-	& z_i \in \mathbb{Z}^+  \\
-	& w_{ij}^k \in \{0, 1\}
+	& x_{ki} \in \{0, 1\} \quad \forall k \in N, i \in N  \\
+	& y_{ij} \in \mathbb{Z}^+ \quad \forall (i, j) \in A  \\
+	& z_i \in \mathbb{Z}^+ \quad \forall i \in N  \\
+	& w_{ij}^k \in \{0, 1\} \quad \forall k \in N, (i, j) \in A  \\
 \end{align*}
