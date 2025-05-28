@@ -1,8 +1,8 @@
 \section{Question 3}
 
-This problem can be represented as a \textit{minimum-weighted dominating set problem (MDSP)}.  \\
+This problem can be represented as a \textit{set covering problem}.  \\
 
-To convert our problem into a \textit{MDSP} we precompute the shortest distance between each pair of nodes in the graph, which can be easily done using the Floyd-Warshall algorithm in $\mathcal{O}(n^3)$ time, where $n$ is the number of nodes in the graph.
+To convert our problem into a \textit{set covering problem} we precompute the shortest distance between each pair of nodes in the graph, which can be easily done using the Floyd-Warshall algorithm in $\mathcal{O}(n^3)$ time, where $n$ is the number of nodes in the graph.
 Then we construct the reachability matrix by checking the distance between each pair of nodes.
 
 \begin{align*}
@@ -13,4 +13,4 @@ Then we construct the reachability matrix by checking the distance between each 
 	\end{cases}
 \end{align*}
 
-We can solve the \textit{MDSP} using the reachability matrix as the graph's adjacency matrix to obtain the solution to the original problem.
+We can solve the \textit{set covering problem} using the rows of the reachability matrix as the possible subsets to obtain the solution to the original problem.
