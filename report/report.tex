@@ -11,102 +11,33 @@
 \usepackage{amssymb}
 \usepackage{enumitem}
 \usepackage{tabularx}
+\usepackage{titlesec}
+\usepackage{hyperref}
 
-\title{Graph optimization \\ Lab Project}
-\author{Ewan Decima}
-\date{May 2025}
+\setcounter{secnumdepth}{0}
 
 \begin{document}
 
-    \maketitle
+	\title{Graph optimization \\ Lab Project}
+	\author{Ewan Decima}
+	\date{May 2025}
 
-    \section{Question}
+	\maketitle
 
-    \subsection*{Question 1}
-    \textit{A telecommunication network is described by an undirected graph $G=(N,E)$. The nodes generate data for network diagnosis, which must be collected in nodes equipped with processing devices. Devices can be installed on any node in $N$ and installing a device in node $i \in N$ costs $c_i$. To guarantee a timely reaction to failures, the data must be received quickly: the overall propagation delay of the path from the source node to the processing node can be at most $T$ milliseconds. The propagation delay on each arc $(i,j)$ is $t_{i,j}$ milliseconds. Formulate the problem of selecting the minimum cost subset of nodes on which to install a device, so as to guarantee that the data for the network diagnosis can be sent to a device within the given time threshold.
-    Solve the instances in the directory q1-instances on the webeep with a solver. Use parameter names as described in the file \texttt{Q1-parameters.mod}.
-    Report, for each instance, the model formulation, the optimal value found and the selected nodes. Can the solver always find the optimal solution in reasonable time? Upload the \texttt{.mod} and \texttt{.run} files, and a \texttt{.pdf} with the model and the result for each instance.}
+	\tableofcontents
+	\newpage
 
-    \vspace{1 cm}
+	\input{answers/q1}
+	\newpage
 
-    \subsubsection{Model}
-    Let's write down the model. First we have the following sets and parameters:
-    \begin{itemize}
-        \item $N$ set of nodes in the network.
-        \item $E$ set of edges in the network.
-        \item $c_i$ cost of installing a device at node $i \in N$.
-        \item $t_{i,j}$ propagation delay on edge $(i,j) \in E$.
-        \item $d_{i,j}$ shortest path distance from node $i$ to $j$.
-        \item $M = (M_{ij})_{i,j \in N}$ a reachability matrix, such that $M_{ij}$ is equal to one if $d_{i,j} \le T$, zero otherwise.
-    \end{itemize}
+	\input{answers/q2}
+	\newpage
 
-    and those decision variables:
-    \begin{itemize}
-        \item $x_i \in \{0,1\}$, a binary variable equal to one if a device is installed at node $i \in N$, zero otherwise.
-        \item $y_{i,j} \in \{0,1\}$, a binary variable equal to one if $i \in N$ is served by a device at node $j \in N$.
+	\input{answers/q3}
+	\newpage
 
-    \end{itemize}
-
-    The objective function is then
-    \begin{equation}
-        \min \sum_{i \in N} c_i x_i
-    \end{equation}
-
-    and is subject to the following constraints:
-    \begin{itemize}
-        \item Coverage constraint: Each node must be served by exactly one device:
-        \[
-            \sum_{j \in N | M_{ij}=1} y_{i,j} = 1 \qquad \forall i \in N
-        \]
-        \item Service constraint: A node can only be served by an installed device:
-        \[
-            y_{i,j} \le x_j \qquad \forall i,j \in N
-        \]
-        
-    \end{itemize}
-
-    \subsubsection{Result}
-    We obtain the following
-
-    \begin{table}[h!]
-        \centering
-        \begin{tabularx}{\textwidth}{|c|c|X|c|}
-            \hline
-            \textbf{Instance} & \textbf{Optimal value} & \textbf{Selected nodes} & \textbf{Solver time (s)} \\
-            \hline
-            1 & 2 & 2; 5 & 0.1 \\
-            \hline
-            2 & 25 & 13; 17; 19 & 0.092 \\
-            \hline
-            3 & 129 & 1; 7; 13; 15; 21; 22; 28; 29; 34 & 0.171 \\
-            \hline
-            4 & 256 & 11; 12; 14; 16; 17; 18; 26; 27; 36; 43; 46; 51; 53; 54; 57; 60; 66; 71; 75; 76 & 0.942 \\
-            \hline
-        \end{tabularx}
-        \caption{Results for each instance}
-        \label{tab:instance_costs}
-    \end{table}
-
-
-
-
-
-
-
-
-
-
-
-    \subsection*{Question 2}
-    \textit{Design a heuristic to compute a feasible solution for the problem. Code it in AMPL and solve the instances on the webeep. Report the value of the cost of the heuristic solution and the computational time. Describe the heuristic in a \texttt{.pdf} file. Upload the \texttt{.mod} and \texttt{.run} files, and a .pdf with the heuristic description and the result for each instance.}
-
-    \include{answers/q2.tex}
-
-    \subsection*{Question 3}
-    \textit{The problem described in Question 1 can be represented as a classical optimization problem: which one? Describe on a .pdf file the procedure to transform an instance of the problem into an instance of the classical problem and upload the .pdf file.}
-	\include{answers/q3.tex}
-
-	\include{answers/q4}
+	\input{answers/q4}
+	\newpage
 
 
     \subsection*{Question 5}
