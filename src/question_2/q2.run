@@ -3,86 +3,71 @@ option solver gurobi;
 
 model ../../assignement_files/q1-instances/Q1-parameters.mod;
 
-data ../../assignement_files/q1-instances/q1-instance-1.dat;
-
 var x{N} binary; # install device at node n?
 var y{N,N} binary; # node is served by an installed device in x?
 
-set A_SPT within N cross N default {};
-param s_SPT symbolic in N;
-param c_SPT{A_SPT} >= 0;
-var x_SPT{A_SPT} >= 0;
-minimize cost_SPT: sum{(i,j) in A_SPT} c_SPT[i,j]*x_SPT[i,j];
-subject to balance_SPT{i in 1..n}:
-	sum{(i,j) in A_SPT} x_SPT[i,j] - sum{ (k,i) in A_SPT} x_SPT[k,i] = (if i = s_SPT
-				then n-1
-				else -1);
-problem SPT: x_SPT, cost_SPT, balance_SPT;
-for{(i,j) in E}{
-	let A_SPT:= A_SPT union {(i,j)};
-	let A_SPT:= A_SPT union {(j,i)};
-}
-for{(i,j) in E}{ # use arc delay as arc cost for shortest path tree
-	let c_SPT[i,j] := t[i,j];
-	let c_SPT[j,i] := t[i,j];
-}
+param d{i in N, j in N} default 999999;  # Distance matrix
+param M{i in N, j in N} default 0;  # Distance matrix
 
-param paths{N} symbolic; # for printing paths from all nodes to the device they are being served by
 var searched{N} binary;
+var served{N} binary;
 set cheapestNode ordered;
-param delay default 0;
-param serves default 0;
 param currentNode default 0;
-param index;
-repeat{
-    if sum{i in N} (searched[i]) = n then break; # all nodes have been iterated through (should never happen)
-    let cheapestNode := {i in N: searched[i] == 0 and c[i] == min{j in N : searched[j] == 0} c[j]};
-    let currentNode := first(cheapestNode); # currentNode is the cheapest unsearched node
-    let searched[currentNode] := 1;
 
-    if sum{i in N} sum{d in N} y[i, d] = n then break; # all nodes are served by and installed device within allow delay
+for {inst in 1..4} {
+    printf "\n========================================\n";
+    printf "INSTANCE %d\n", inst;
+    printf "========================================\n";
 
-    let s_SPT := currentNode;
-    solve SPT;
+    # Reset and load data
+    reset data;
+    data ("../../assignement_files/q1-instances/q1-instance-" & inst & ".dat");
 
-    if sum {d in N} y[currentNode, d] = 0 then {
-        # if the cheapest node is not served by a device already a device will by default be installed on it just to serve itself
-        let serves := serves + 1;
-        let y[currentNode, currentNode] := 1;
+
+    for {i in N, j in N: i != j} {
+            let d[i,j] := 999999;
     }
-
-    for{i in N : i<>s_SPT and not sum {d in N} y[i, d]}
-    {
-        let paths[i] := "";
-        
-        # for all nodes that are not yet served calculate the delay from the currentNode,
-        # if it is under the threshold the node is marked as served by the currentNode
-        let index := i;
-        repeat until index == s_SPT
-        {
-            for{(j,h) in A_SPT : h = index}
-            {
-                if(x_SPT[j,h] <> 0) then
-                {
-                    let delay := delay + c_SPT[j, index];
-                    let paths[i] := sprintf("%s(%d, %d), ", paths[i], j, index);
-                    let index := j;
-                }
+    for {i in N} {
+        let d[i,i] := 0;
+    }
+    for {(i,j) in E} {
+        let d[i,j] := t[i,j];
+        let d[j,i] := t[i,j];
+    }
+    for {k in N} {
+        for {i in N} {
+            for {j in N} {
+                if d[i,k] + d[k,j] < d[i,j] then
+                    let d[i,j] := d[i,k] + d[k,j];
             }
         }
-        if sum{d in N} y[i, d] = 0 and delay <= T then {
-            let serves := serves + 1;
-            let y[i, currentNode] := 1;
-            let paths[i] := sprintf("%s delay: %f", paths[i], delay);
+    }
+    for {i in N} {
+        for {j in N} {
+            if d[i,j] <= T then
+                let M[i,j] := 1;
         }
-        let delay := 0;
+        let searched[i] := 0;
     }
-    if serves > 0 then {
-        let x[currentNode] := 1; # if installing a device on this node serves more than 0 unserved nodes then we install
-        let paths[currentNode] := sprintf("device, cost: %d", c[currentNode]);
-    }
-    let serves := 0;
-}
+    
+    repeat{
+        if sum{i in N} (searched[i]) = n then break; # all nodes have been iterated through (should never happen)
+        let cheapestNode := {i in N: searched[i] == 0 and (((sum {k in N} M[i, k] * served[k])) / c[i]) == min{j in N : searched[j] == 0} ((sum {k in N} M[j, k] * served[k]) / c[j])};
+        let currentNode := first(cheapestNode); # currentNode is the cheapest unsearched node
+        let searched[currentNode] := 1;
 
-display paths;
-printf "objective function: %d\n", sum{i in N} x[i] * c[i];
+        if sum{i in N} served[i] = n then break; # all nodes are served by and installed device within allow delay
+
+        for{i in N : not served[i]}
+        {
+            if M[currentNode, i] then {
+                let y[i, currentNode] := 1;
+                let served[i] := 1;
+            }
+
+        }
+        if sum{i in N} y[i, currentNode] > 0 then let x[currentNode] := 1; # if installing a device on this node serves more than 0 unserved nodes then we install
+    }
+
+    printf "objective function: %d\n", sum{i in N} x[i] * c[i];
+}
