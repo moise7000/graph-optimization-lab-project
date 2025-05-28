@@ -19,5 +19,5 @@ s.t. DelayConstraint{k in N}:
 	sum{(i, j) in A} t[i, j] * w[k, i, j] <= T;
 
 s.t. FlowConservation{k in N, i in N}:
-	sum{(i, j) in A} w[k, i, j] - sum{(j, i) in A} w[k, j, i] = 
+	sum{(i, j) in A} w[k, i, j] - sum{(j, i) in A} w[k, j, i] =
 		if i == k then (1 - x[k, k]) else (-x[k, i]);
