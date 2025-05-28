@@ -1,5 +1,23 @@
 \section{Question 2}
 
+The heuristic we designed takes an adaptive greedy approach to find a feasible solution to the problem.
+As in the previous question we premcompute the reachability matrix $M_{ij}$ using the Floyd-Warshall algorithm.
+The algorithm starts with an empty solution and iteratively assigns a device to a node until a feasible solution is found where all nodes are served by a device.
+It keeps track of the nodes that have been searched $N^{Unsearched}$ and the nodes that are not yet served by a device in the solution $N^{Unserved}$.
+At each iteration, the algorithm selects the node $i$ that minimizes the ratio
+where $c_i$ is the cost of installing a device at node $i$, and the denominator is the number of new nodes that would be served by installing a device at $i$. In other words, we select the node where the cost per newly served node is minimized.
+Formally the node to be considered is determined: 
+$$\text{select i} \in N^{Unsearched} | min(\frac{c_i}{1 + \sum{k \in N^{Unserved}}^{} M_{ij}})$$
+
+These are the steps taken by the algorithm at each iteration:
+\begin{itemize}
+	\item If solution is feasible end iteration.
+	\item Consider the cheapest node using our defined heuristic.
+	\item If installing a device on that node can serve 1 or more unserved nodes then add it to the solution.
+\end{itemize}
+
+A feasible solution will always be found as in worst case the algorithm will install a device on all nodes and this case is always a feasible solution.
+
 \subsubsection*{Results}
 
 \begin{table}[h!]
@@ -10,11 +28,11 @@
 		\hline
 		1 & 2 & 2; 5 & 0.002 \\
 		\hline
-		2 & 31 & 5; 10; 11; 19 & 0.013 \\
+		2 & 36 & 1; 5; 8; 10; 11 & 0.013 \\
 		\hline
-		3 & 142 & 7; 8; 10; 14; 16; 21; 25; 29; 34; 40 & 0.083 \\
+		3 & 147 & 7; 8; 10; 14; 15; 16; 25; 26; 29; 34; 40 & 0.083 \\
 		\hline
-		4 & 294 & 1; 3; 10; 11; 12; 18; 23; 24; 26; 27; 29; 33; 53; 56; 57; 59; 62; 64; 68; 71; 75; 80 & 0.599 \\
+		4 & 287 & 1; 3; 10; 11; 12; 18; 23; 24; 25; 27; 29; 33; 53; 56; 57; 59; 62; 64; 71; 79; 80 & 0.599 \\
 		\hline
 	\end{tabularx}
 	\caption{Results for each instance}
