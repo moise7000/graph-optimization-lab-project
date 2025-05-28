@@ -1,5 +1,7 @@
 **/*.aux
 **/*.log
+**/*.out
+**/*.toc
 **/.DS_Store
 src/question_1/q1-instance-3.dat
 src/question_1/q1-instance-1.dat
