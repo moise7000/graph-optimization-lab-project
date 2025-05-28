@@ -29,7 +29,7 @@
 	\item For each node, enough devices must be installed to handle the data sent to it.
 	\item For each arc, enough channels must be installed to handle the data sent on that arc.
 	\item The propagation time must not exceed the maximum allowed time.
-	\item Flow constraints: ensure that one and only one path from node $k$ to node $i$ exists if $x_{ki} = 1$; ensure that no data is sent on the network if a node sends data to itself.
+	\item Flow constraints: ensure that one and only one path from node $k$ to node $i$ exists if $x_{ki} = 1$; ensure that no data is sent on the network if a node sends data to itself ($x_{kk} = 1$).
 \end{enumerate}
 
 \subsubsection*{Model}
@@ -63,7 +63,7 @@
 	\centering
 	\begin{tabular}{|c|c|c|}
 		\hline
-		\textbf{Instance} & \textbf{Optimal value} & \textbf{Solver time (s)} \\
+		\textbf{Instance} & \textbf{Optimal value} & \textbf{Solver CPU time (s)} \\
 		\hline
 		1 & 85  & 0.154 \\
 		\hline
