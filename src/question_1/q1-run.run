@@ -2,15 +2,23 @@
 
 reset;
 
-# Load the model
-model Q1-model.mod;
+model Q1-parameters.mod;
+
+
 
 # Declare timing parameters
 param start_time;
 param total_time;
 param solve_time;
 param max_dist;
+param d{i in N, j in N} default 999999;
+param a{N,N} default 0;
+model Q1-model.mod;
 
+
+
+
+problem q1: x, y, TotalCost, Coverage, Service;
 # Solver settings
 option solver 'gurobi';
 option solver_msg 0;
@@ -20,18 +28,15 @@ for {inst in 1..4} {
     printf "\n========================================\n";
     printf "INSTANCE %d\n", inst;
     printf "========================================\n";
-    
+
     # Reset and load data
     reset data;
     data ("q1-instance-" & inst & ".dat");
-    
+
     # Start timing
     let start_time := _ampl_time;
-    
+
     # Initialize distance matrix
-    for {i in N, j in N: i != j} {
-        let d[i,j] := 999999;
-    }
     for {i in N} {
         let d[i,i] := 0;
     }
@@ -39,24 +44,30 @@ for {inst in 1..4} {
         let d[i,j] := t[i,j];
         let d[j,i] := t[i,j];
     }
-    
+
     # Floyd-Warshall algorithm
     for {k in N} {
         for {i in N} {
             for {j in N} {
                 if d[i,k] + d[k,j] < d[i,j] then
                     let d[i,j] := d[i,k] + d[k,j];
+
             }
         }
     }
-    
+    for {k in N} {
+        for {i in N} {
+        	let a[k,i] := if d[k,i] <= T then 1 else 0;
+        }
+    }
+
     printf "Nodes: %d, Threshold T: %.0f\n", n, T;
-    
+
     # Solve
-    solve;
-    
+    solve q1;
+
     # Calculate time
-    let total_time := _ampl_time - start_time;
+    let total_time := _ampl_time - start_time + _solve_time;
     
     # Results
     printf "Status: %s\n", solve_result;

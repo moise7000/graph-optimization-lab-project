@@ -36,12 +36,14 @@
         \item $c_i$ cost of installing a device at node $i \in N$.
         \item $t_{i,j}$ propagation delay on edge $(i,j) \in E$.
         \item $d_{i,j}$ shortest path distance from node $i$ to $j$.
+        \item $M = (M_{ij})_{i,j \in N}$ a reachability matrix, such that $M_{ij}$ is equal to one if $y_{i,j} d_{i,j} \le T$, zero otherwise.
     \end{itemize}
 
     and those decision variables:
     \begin{itemize}
         \item $x_i \in \{0,1\}$, a binary variable equal to one if a device is installed at node $i \in N$, zero otherwise.
-        \item $y_{i,j} \in \{0,1\}$, a binary variable equal to one if $i \in N$ is served by a device a device at node $j \in N$.
+        \item $y_{i,j} \in \{0,1\}$, a binary variable equal to one if $i \in N$ is served by a device at node $j \in N$.
+
     \end{itemize}
 
     The objective function is then
@@ -53,16 +55,13 @@
     \begin{itemize}
         \item Coverage constraint: Each node must be served by exactly one device:
         \[
-            \sum_{j \in N} y_{i,j} = 1 \qquad \forall i \in N
+            \sum_{j \in N | M_{ij}=1} y_{i,j} = 1 \qquad \forall i \in N
         \]
         \item Service constraint: A node can only be served by an installed device:
         \[
             y_{i,j} \le x_j \qquad \forall i,j \in N
         \]
-        \item Distance constraint: Service only allowed within time threshold:
-        \[
-            y_{i,j} \times d_{i,j} \le T \qquad \forall i,j \in N
-        \]
+        
     \end{itemize}
 
     \subsubsection{Result}
@@ -74,13 +73,13 @@
             \hline
             \textbf{Instance} & \textbf{Optimal value} & \textbf{Selected nodes} & \textbf{Solver time (s)} \\
             \hline
-            1 & 2 & 2; 5 & 0.01 \\
+            1 & 2 & 2; 5 & 0.1 \\
             \hline
-            2 & 25 & 13; 17; 19 & 0.011 \\
+            2 & 25 & 13; 17; 19 & 0.092 \\
             \hline
-            3 & 129 & 1; 7; 13; 15; 21; 22; 28; 29; 34 & 0.45 \\
+            3 & 129 & 1; 7; 13; 15; 21; 22; 28; 29; 34 & 0.171 \\
             \hline
-            4 & 256 & 11; 12; 14; 16; 17; 18; 26; 27; 36; 43; 46; 51; 53; 54; 57; 60; 66; 71; 75; 76 & 0.308 \\
+            4 & 256 & 11; 12; 14; 16; 17; 18; 26; 27; 36; 43; 46; 51; 53; 54; 57; 60; 66; 71; 75; 76 & 0.942 \\
             \hline
         \end{tabularx}
         \caption{Results for each instance}
