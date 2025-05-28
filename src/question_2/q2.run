@@ -9,9 +9,13 @@ var y{N,N} binary; # node is served by an installed device in x?
 param d{i in N, j in N} default 999999;  # Distance matrix
 param M{i in N, j in N} default 0;  # Distance matrix
 
+param start_time;
+param total_time;
+param solve_time;
+param max_dist;
 var searched{N} binary;
 var served{N} binary;
-set cheapestNode ordered;
+set bestNode ordered;
 param currentNode default 0;
 
 for {inst in 1..4} {
@@ -19,13 +23,13 @@ for {inst in 1..4} {
     printf "INSTANCE %d\n", inst;
     printf "========================================\n";
 
-    # Reset and load data
     reset data;
     data ("../../assignement_files/q1-instances/q1-instance-" & inst & ".dat");
 
+    let start_time := _ampl_time;
 
     for {i in N, j in N: i != j} {
-            let d[i,j] := 999999;
+        let d[i,j] := 999999;
     }
     for {i in N} {
         let d[i,i] := 0;
@@ -52,8 +56,8 @@ for {inst in 1..4} {
     
     repeat{
         if sum{i in N} (searched[i]) = n then break; # all nodes have been iterated through (should never happen)
-        let cheapestNode := {i in N: searched[i] == 0 and (((sum {k in N} M[i, k] * served[k])) / c[i]) == min{j in N : searched[j] == 0} ((sum {k in N} M[j, k] * served[k]) / c[j])};
-        let currentNode := first(cheapestNode); # currentNode is the cheapest unsearched node
+        let bestNode := {i in N: searched[i] == 0 and ((sum {k in N} M[i, k] * (1 - served[k])) / c[i]) == max{j in N : searched[j] == 0} ((sum {k in N} M[j, k] * (1 - served[k])) / c[j])};
+        let currentNode := first(bestNode); # currentNode is the cheapest unsearched node
         let searched[currentNode] := 1;
 
         if sum{i in N} served[i] = n then break; # all nodes are served by and installed device within allow delay
@@ -69,5 +73,21 @@ for {inst in 1..4} {
         if sum{i in N} y[i, currentNode] > 0 then let x[currentNode] := 1; # if installing a device on this node serves more than 0 unserved nodes then we install
     }
 
-    printf "objective function: %d\n", sum{i in N} x[i] * c[i];
+    printf "Nodes: %d, Threshold T: %.0f\n", n, T;
+    let total_time := _ampl_time - start_time + _solve_time;
+    printf "Total time: %.3f seconds\n", total_time;
+
+    printf "Optimal cost: %.2f\n", sum{i in N} x[i] * c[i];
+    printf "Devices installed: %d\n", sum{i in N} x[i];
+    
+    printf "Selected nodes: ";
+    for {i in N: x[i] > 0.5} {
+        printf "%d ", i;
+    }
+    printf "\n";
+    
+    # Verification
+    let max_dist := max{i in N, j in N: y[i,j] > 0.5} d[i,j];
+    printf "Max distance: %.3f (limit: %.0f)\n", max_dist, T;
+    printf "Feasible: %s\n", if max_dist <= T then "YES" else "NO";
 }
