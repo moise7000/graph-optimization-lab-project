@@ -1,0 +1,92 @@
+# Q1 Run file - Multiple instances with timing
+
+reset;
+
+model Q1-parameters.mod;
+
+
+
+# Declare timing parameters
+param start_time;
+param total_time;
+param solve_time;
+param max_dist;
+param d{i in N, j in N} default 999999;
+param a{N,N} default 0;
+model Q1-model.mod;
+
+
+
+
+problem q1: x, y, TotalCost, Coverage, Service;
+# Solver settings
+option solver 'gurobi';
+option solver_msg 0;
+
+# Process each instance
+for {inst in 1..4} {
+    printf "\n========================================\n";
+    printf "INSTANCE %d\n", inst;
+    printf "========================================\n";
+
+    # Reset and load data
+    reset data;
+    data ("q1-instance-" & inst & ".dat");
+
+    # Start timing
+    let start_time := _ampl_time;
+
+    # Initialize distance matrix
+    for {i in N} {
+        let d[i,i] := 0;
+    }
+    for {(i,j) in E} {
+        let d[i,j] := t[i,j];
+        let d[j,i] := t[i,j];
+    }
+
+    # Floyd-Warshall algorithm
+    for {k in N} {
+        for {i in N} {
+            for {j in N} {
+                if d[i,k] + d[k,j] < d[i,j] then
+                    let d[i,j] := d[i,k] + d[k,j];
+
+            }
+        }
+    }
+    for {k in N} {
+        for {i in N} {
+        	let a[k,i] := if d[k,i] <= T then 1 else 0;
+        }
+    }
+
+    printf "Nodes: %d, Threshold T: %.0f\n", n, T;
+
+    # Solve
+    solve q1;
+
+    # Calculate time
+    let total_time := _ampl_time - start_time + _solve_time;
+    
+    # Results
+    printf "Status: %s\n", solve_result;
+    printf "Total time: %.3f seconds\n", total_time;
+    
+    if solve_result = "solved" then {
+        printf "Optimal cost: %.2f\n", TotalCost;
+        printf "Devices installed: %d\n", sum{i in N} x[i];
+        
+        printf "Selected nodes: ";
+        for {i in N: x[i] > 0.5} {
+            printf "%d ", i;
+        }
+        printf "\n";
+        
+        # Verification
+        let max_dist := max{i in N, j in N: y[i,j] > 0.5} d[i,j];
+        printf "Max distance: %.3f (limit: %.0f)\n", max_dist, T;
+        printf "Feasible: %s\n", if max_dist <= T then "YES" else "NO";
+    }
+}
+

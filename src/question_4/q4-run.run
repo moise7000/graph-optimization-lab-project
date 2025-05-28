@@ -1,0 +1,40 @@
+reset;
+
+model "Q4-parameters.mod";
+
+model "q4-model.mod";
+
+problem q4: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity;
+option solver 'gurobi';
+option solver_msg 0;
+
+for {inst in 1..7} {
+	reset data;
+	data ("q4-i" & inst & ".dat");
+
+	solve q4;
+	printf "Instance %d       \n", inst;
+	printf "Total cost: %3g\n", TotalCost;
+	printf "Solving time: %.3f seconds\n", _solve_time;
+
+	printf "\nAssignments:\n";
+	for {i in N} {
+		printf "%2d -> %2d\n", i, sum{j in N} j * x[i, j];
+	}
+
+	printf "\nNumber of installed devices:\n";
+	for {i in N} {
+		if y[i] > 0 then {
+			printf "%2d: %d\n", i, y[i];
+		}
+	}
+
+	printf "\nNumber of installed channels:\n";
+	for {(i, j) in A} {
+		if z[i, j] > 0 then {
+			printf "%2d -> %2d: %d\n", i, j, z[i, j];
+		}
+	}
+
+	printf "\n----------------------------\n\n";
+}

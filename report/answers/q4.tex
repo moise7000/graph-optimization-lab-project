@@ -1,0 +1,84 @@
+\subsection*{Question 4}
+
+\subsubsection*{Parameters}
+
+\begin{itemize}
+	\item $G = (N, A)$: the directed graph with nodes $N$ and arcs $A$.
+	\item $d_k$: data to send from node $k \in N$.
+	\item $c_i$: cost of installing devices at node $i \in N$.
+	\item $cap_i$: capacity of devices installed at node $i \in N$.
+	\item $T$: maximum allowed propagation time for data.
+	\item $t_{ij}$: propagation delay on arc $(i, j) \in A$.
+	\item $g_{ij}$: cost of installing channels on arc $(i, j) \in A$.
+	\item $u$: capacity of each channel installed on arcs $(i, j) \in A$.
+\end{itemize}
+
+\subsubsection*{Decision Variables}
+
+\begin{itemize}
+	\item $x_{ki}$ binary: one if data is sent from node $k$ to node $i$, zero otherwise.
+	\item $y_i$ integer: number of devices installed at node $i$.
+	\item $z_{ij}$ integer: number of channels installed on arc $(i, j)$.
+	\item $w_{ij}^k$ binary: one if data from node $k$ is sent on arc $(i, j)$, zero otherwise.
+\end{itemize}
+
+\subsubsection*{Constraints}
+
+\begin{enumerate}
+	\item Each node must send its data to exactly one other node.
+	\item For each node, enough devices must be installed to handle the data sent to it.
+	\item For each arc, enough channels must be installed to handle the data sent on that arc.
+	\item The propagation time must not exceed the maximum allowed time.
+	\item Flow constraints: ensure that one and only one path from node $k$ to node $i$ exists if $x_{ki} = 1$; ensure that no data is sent on the network if a node sends data to itself ($x_{kk} = 1$).
+\end{enumerate}
+
+\subsubsection*{Model}
+
+\begin{align*}
+    \min \quad & \sum_{i \in N} c_i y_i + \sum_{(i, j) \in A} g_{ij} z_{ij} & \\
+	\\
+    \text{s.t.} \quad &  \\
+	1. \quad & \sum_{i \in N} x_{ki} = 1 \quad \forall k \in N  \\
+	2. \quad & \sum_{k \in N} d_k \; x_{ki} \le cap_i \; y_i \quad \forall i \in N  \\
+	3. \quad & \sum_{k \in N} d_k \; w_{ij}^k \le u \; z_{ij} \quad \forall (i, j) \in A \quad  \\
+	4. \quad & \sum_{(i, j) \in A} t_{ij} \; w_{ij}^k \le T \quad \forall k \in N  \\
+	5. \quad & \sum_{j \in N \mid (i, j) \in A} w_{ij}^k \; - \sum_{j \in N \mid (j, i) \in A} w_{ji}^k = \left\{
+	\begin{array}{rl}
+		(1 - x_{kk}) & \text{if } i = k  \\
+		-x_{ki} & \text{if } i \ne k
+	\end{array}
+	\right.
+	\quad \forall k \in N, \; i \in N  \\
+	\\
+	& x_{ki} \in \{0, 1\} \quad \forall k \in N, i \in N  \\
+	& y_{ij} \in \mathbb{Z}^+ \quad \forall (i, j) \in A  \\
+	& z_i \in \mathbb{Z}^+ \quad \forall i \in N  \\
+	& w_{ij}^k \in \{0, 1\} \quad \forall k \in N, (i, j) \in A  \\
+\end{align*}
+
+
+\subsubsection*{Results}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{Instance} & \textbf{Optimal value} & \textbf{Solver CPU time (s)} \\
+		\hline
+		1 & 85  & 0.154 \\
+		\hline
+		2 & 328 & 0.099 \\
+		\hline
+		3 & 376 & 0.053 \\
+		\hline
+		4 & 149 & 7.550 \\
+		\hline
+		5 & 154 & 0.702 \\
+		\hline
+		6 & 424 & 15.152 \\
+		\hline
+		7 & 420 & 9.739 \\
+		\hline
+	\end{tabular}
+	\label{tab:instance_costs}
+\end{table}
