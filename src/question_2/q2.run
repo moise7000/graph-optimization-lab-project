@@ -1,0 +1,73 @@
+reset;
+option solver gurobi;
+
+model ../../assignement_files/q1-instances/Q1-parameters.mod;
+
+var x{N} binary; # install device at node n?
+var y{N,N} binary; # node is served by an installed device in x?
+
+param d{i in N, j in N} default 999999;  # Distance matrix
+param M{i in N, j in N} default 0;  # Distance matrix
+
+var searched{N} binary;
+var served{N} binary;
+set cheapestNode ordered;
+param currentNode default 0;
+
+for {inst in 1..4} {
+    printf "\n========================================\n";
+    printf "INSTANCE %d\n", inst;
+    printf "========================================\n";
+
+    # Reset and load data
+    reset data;
+    data ("../../assignement_files/q1-instances/q1-instance-" & inst & ".dat");
+
+
+    for {i in N, j in N: i != j} {
+            let d[i,j] := 999999;
+    }
+    for {i in N} {
+        let d[i,i] := 0;
+    }
+    for {(i,j) in E} {
+        let d[i,j] := t[i,j];
+        let d[j,i] := t[i,j];
+    }
+    for {k in N} {
+        for {i in N} {
+            for {j in N} {
+                if d[i,k] + d[k,j] < d[i,j] then
+                    let d[i,j] := d[i,k] + d[k,j];
+            }
+        }
+    }
+    for {i in N} {
+        for {j in N} {
+            if d[i,j] <= T then
+                let M[i,j] := 1;
+        }
+        let searched[i] := 0;
+    }
+    
+    repeat{
+        if sum{i in N} (searched[i]) = n then break; # all nodes have been iterated through (should never happen)
+        let cheapestNode := {i in N: searched[i] == 0 and (((sum {k in N} M[i, k] * served[k])) / c[i]) == min{j in N : searched[j] == 0} ((sum {k in N} M[j, k] * served[k]) / c[j])};
+        let currentNode := first(cheapestNode); # currentNode is the cheapest unsearched node
+        let searched[currentNode] := 1;
+
+        if sum{i in N} served[i] = n then break; # all nodes are served by and installed device within allow delay
+
+        for{i in N : not served[i]}
+        {
+            if M[currentNode, i] then {
+                let y[i, currentNode] := 1;
+                let served[i] := 1;
+            }
+
+        }
+        if sum{i in N} y[i, currentNode] > 0 then let x[currentNode] := 1; # if installing a device on this node serves more than 0 unserved nodes then we install
+    }
+
+    printf "objective function: %d\n", sum{i in N} x[i] * c[i];
+}
