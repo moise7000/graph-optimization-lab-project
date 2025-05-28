@@ -3,3 +3,16 @@
 **/*.out
 **/*.toc
 **/.DS_Store
+src/question_1/q1-instance-3.dat
+src/question_1/q1-instance-1.dat
+src/question_1/q1-instance-2.dat
+src/question_1/q1-instance-4.dat
+src/question_2/q1-instance-3.dat
+src/question_2/q1-instance-1.dat
+src/question_2/q1-instance-2.dat
+src/question_2/q1-instance-4.dat
+src/question_1/Q1-parameters.mod
+src/question_2/Q1-parameters.mod
+report/report.fdb_latexmk
+report/report.fls
+report/report.synctex.gz
