@@ -1,0 +1,16 @@
+\subsection*{Question 3}
+
+This problem can be represented as a \textit{minimum-weighted dominating set problem (MDSP)}.  \\
+
+To convert our problem into a \textit{MDSP} we precompute the shortest distance between each pair of nodes in the graph, which can be easily done using the Floyd-Warshall algorithm in $\mathcal{O}(n^3)$ time, where $n$ is the number of nodes in the graph.
+Then we construct the reachability matrix by checking the distance between each pair of nodes.
+
+\begin{align*}
+	M \in \mathcal{M}_{n \times n} (\{0, 1\})  \\
+	M_{ij} = \begin{cases}
+		1 & \text{if } d_{ij} \leq T \\
+		0 & \text{otherwise}
+	\end{cases}
+\end{align*}
+
+We can solve the \textit{MDSP} using the reachability matrix as the graph's adjacency matrix to obtain the solution to the original problem.
