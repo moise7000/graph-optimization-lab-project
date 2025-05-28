@@ -3,10 +3,10 @@ option solver gurobi;
 
 model ../../assignement_files/q1-instances/Q1-parameters.mod;
 
-data ../../assignement_files/q1-instances/q1-instance-2.dat;
+data ../../assignement_files/q1-instances/q1-instance-1.dat;
 
 var x{N} binary; # install device at node n?
-var s{N} binary; # node is served by an installed device in x?
+var y{N,N} binary; # node is served by an installed device in x?
 
 set A_SPT within N cross N default {};
 param s_SPT symbolic in N;
@@ -40,18 +40,18 @@ repeat{
     let currentNode := first(cheapestNode); # currentNode is the cheapest unsearched node
     let searched[currentNode] := 1;
 
-    if sum{i in N} (s[i]) = n then break; # all nodes are served by and installed device within allow delay
+    if sum{i in N} sum{d in N} y[i, d] = n then break; # all nodes are served by and installed device within allow delay
 
     let s_SPT := currentNode;
     solve SPT;
 
-    if s[currentNode] = 0 then {
+    if sum {d in N} y[currentNode, d] = 0 then {
         # if the cheapest node is not served by a device already a device will by default be installed on it just to serve itself
         let serves := serves + 1;
-        let s[currentNode] := 1;
+        let y[currentNode, currentNode] := 1;
     }
 
-    for{i in N : i<>s_SPT and not s[i]}
+    for{i in N : i<>s_SPT and not sum {d in N} y[i, d]}
     {
         let paths[i] := "";
         
@@ -70,9 +70,9 @@ repeat{
                 }
             }
         }
-        if s[i] = 0 and delay <= T then {
+        if sum{d in N} y[i, d] = 0 and delay <= T then {
             let serves := serves + 1;
-            let s[i] := 1;
+            let y[i, currentNode] := 1;
             let paths[i] := sprintf("%s delay: %f", paths[i], delay);
         }
         let delay := 0;
