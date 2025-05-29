@@ -55,18 +55,21 @@ for {inst in 1..7} {
 	# Force already known variables
 
 	# If node i is unreachable from node k, it cannot serve it
-	for {k in N, i in N : a[k, i] = 0} {
+	for {k in N, i in N : a[k, i] = 0 and i <> k} {
 		let x[k, i] := 0;
+		fix x[k, i];
 	}
 
 	# If any node of an arch (i, j) is unreachable from node k, it cannot serve it
 	for {k in N, (i, j) in A : a[k, i] = 0 or a[k, j] = 0} {
 		let w[k, i, j] := 0;
+		fix w[k, i, j];
 	}
 
 	# If a node has 0 demand, it will serve itself
 	for {k in N : d[k] = 0} {
 		let x[k, k] := 1;
+		fix x[k, k];
 	}
 
 	solve q4;
