@@ -1,21 +1,82 @@
 reset;
 
+option solver 'gurobi';
+option solver_msg 0;
+
 model "Q4-parameters.mod";
+
+param start_time;
+param end_time;
+param total_time;
+
+param dist{i in N, j in N} default 999999;
+param a{N,N} default 0;
 
 model "q4-model.mod";
 
 problem q4: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity;
-option solver 'gurobi';
-option solver_msg 0;
-
 for {inst in 1..7} {
 	reset data;
 	data ("q4-i" & inst & ".dat");
 
+	printf "\n========================================\n";
+	printf "INSTANCE %d\n", inst;
+	printf "========================================\n";
+
+
+	let start_time := _ampl_time;
+
+	# Initialize distance matrix
+	for {k in N} {
+		let dist[k, k] := 0;
+	}
+	for {(i, j) in A} {
+		let dist[i, j] := t[i, j];
+	}
+
+	# Floyd-Warshall algorithm
+	for {k in N} {
+		for {i in N} {
+			for {j in N} {
+				if dist[i, k] + dist[k, j] < dist[i, j] then
+					let dist[i, j] := dist[i, k] + dist[k, j];
+
+			}
+		}
+	}
+	for {k in N} {
+		for {i in N} {
+			if d[k] > 0 and dist[k, i] <= T then {
+				let a[k, i] := 1;
+			}
+		}
+	}
+
+	# Force already known variables
+
+	# If node i is unreachable from node k, it cannot serve it
+	for {k in N, i in N : a[k, i] = 0} {
+		let x[k, i] := 0;
+	}
+
+	# If any node of an arch (i, j) is unreachable from node k, it cannot serve it
+	for {k in N, (i, j) in A : a[k, i] = 0 or a[k, j] = 0} {
+		let w[k, i, j] := 0;
+	}
+
+	# If a node has 0 demand, it will serve itself
+	for {k in N : d[k] = 0} {
+		let x[k, k] := 1;
+	}
+
 	solve q4;
-	printf "Instance %d       \n", inst;
+
+	let end_time := _ampl_time;
+	let total_time := end_time - start_time + _solve_time;
+	
+
 	printf "Total cost: %3g\n", TotalCost;
-	printf "Solving time: %.3f seconds\n", _solve_time;
+	printf "Solve time: %.3f seconds\n", total_time;
 
 	printf "\nAssignments:\n";
 	for {i in N} {
@@ -35,6 +96,4 @@ for {inst in 1..7} {
 			printf "%2d -> %2d: %d\n", i, j, z[i, j];
 		}
 	}
-
-	printf "\n----------------------------\n\n";
 }
