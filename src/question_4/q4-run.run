@@ -1,16 +1,46 @@
 reset;
 
+option solver 'gurobi';
+option solver_msg 0;
+
 model "Q4-parameters.mod";
+
+param dist{i in N, j in N} default 999999;
+param a{N,N} default 0;
 
 model "q4-model.mod";
 
 problem q4: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity;
-option solver 'gurobi';
-option solver_msg 0;
-
 for {inst in 1..7} {
 	reset data;
 	data ("q4-i" & inst & ".dat");
+
+	# Initialize distance matrix
+	for {k in N} {
+		let dist[k, k] := 0;
+	}
+	for {(i, j) in A} {
+		let dist[i, j] := t[i, j];
+	}
+
+	# Floyd-Warshall algorithm
+	for {k in N} {
+		for {i in N} {
+			for {j in N} {
+				if dist[i, k] + dist[k, j] < dist[i, j] then
+					let dist[i, j] := dist[i, k] + dist[k, j];
+
+			}
+		}
+	}
+	for {k in N} {
+		let a[k, k] := 1;
+		for {i in N} {
+			if d[k] > 0 and dist[k, i] <= T then
+				let a[k, i] := 1;
+		}
+	}
+
 
 	solve q4;
 	printf "Instance %d       \n", inst;
