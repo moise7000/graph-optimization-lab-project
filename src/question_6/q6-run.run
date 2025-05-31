@@ -1,0 +1,150 @@
+reset;
+
+param debug := 0;
+
+option solver 'gurobi';
+option solver_msg 0;
+
+model "Q4-parameters.mod";
+
+param start_time;
+param end_time;
+param precomputation_time;
+param total_time_wo_covers;
+param total_time_w_covers;
+
+param dist{i in N, j in N} default 999999;
+param a{N,N} default 0;
+
+param B default 99999999;
+set EC{N} within N;
+param CC{N};
+
+set reachable_nodes;
+param cover_capacity;
+set smallest_demands ordered;
+param demand_to_add;
+param cover_cardinality;
+
+
+model "q6-model.mod";
+
+problem q6_wo_covers: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity;
+problem q6_w_covers: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity, Cover;
+
+for {inst in 1..7} {
+	reset data;
+	data ("q4-i" & inst & ".dat");
+
+	printf "\n========================================\n";
+	printf "INSTANCE %d\n", inst;
+	printf "========================================\n";
+
+	let start_time := _ampl_time;
+
+	# Initialize distance matrix
+	for {k in N} {
+		let dist[k, k] := 0;
+	}
+	for {(i, j) in A} {
+		let dist[i, j] := t[i, j];
+	}
+
+	# Floyd-Warshall algorithm
+	for {k in N} {
+		for {i in N} {
+			for {j in N} {
+				if dist[i, k] + dist[k, j] < dist[i, j] then
+					let dist[i, j] := dist[i, k] + dist[k, j];
+			}
+		}
+	}
+	for {k in N} {
+		for {i in N} {
+			if d[k] > 0 and dist[k, i] <= T then {
+				let a[k, i] := 1;
+			}
+		}
+	}
+
+	# Force already known variables
+
+	# If node i is unreachable from node k, it cannot serve it
+	for {k in N, i in N : a[k, i] = 0 and i <> k} {
+		let x[k, i] := 0;
+		fix x[k, i];
+	}
+
+	# If any node of an arch (i, j) is unreachable from node k, it cannot serve it
+	for {k in N, (i, j) in A : a[k, i] = 0 or a[k, j] = 0} {
+		let w[k, i, j] := 0;
+		fix w[k, i, j];
+	}
+
+	# If a node has 0 demand, it will serve itself
+	for {k in N : d[k] = 0} {
+		let x[k, k] := 1;
+		fix x[k, k];
+	}
+
+	let end_time := _ampl_time;
+	let precomputation_time := end_time - start_time;
+
+	solve q6_wo_covers;
+	let total_time_wo_covers := precomputation_time + _solve_time;
+	printf "Total cost without covers: %3g ( %.3f s )\n", TotalCost, total_time_wo_covers;
+
+	let start_time := _ampl_time;
+
+	# Generate minimum covers
+	let B := nb_n * 10;
+	for {i in N} {
+		let reachable_nodes := setof{k in N : a[k, i] = 1} k;
+		let cover_capacity := 0;
+		let cover_cardinality := 0;
+
+		repeat {
+			let smallest_demands := setof{j in reachable_nodes : d[j] = min{jj in reachable_nodes} d[jj]} j;
+			let demand_to_add := first(smallest_demands);
+			let cover_capacity := cover_capacity + d[demand_to_add];
+			let reachable_nodes := reachable_nodes diff {demand_to_add};
+			let cover_cardinality := cover_cardinality + 1;
+		} while (cover_capacity <= cap[i] and card(reachable_nodes) > 0);
+
+		let CC[i] := cover_cardinality;
+		let EC[i] := setof{k in N : a[k, i] = 1} k;
+	}
+
+	let end_time := _ampl_time;
+
+	solve q6_w_covers;
+	let total_time_w_covers := precomputation_time + end_time - start_time + _solve_time;
+	printf "Total cost with covers: %3g ( %.3f s )\n", TotalCost, total_time_w_covers;
+	
+	if debug then {
+		printf "\nAssignments:\n";
+		for {i in N} {
+			printf "%2d -> ", i;
+			for {j in N} {
+				if x[i, j] > 0 then {
+					printf " (%2d, %.3f) ", j, x[i, j];
+				}
+			}
+			printf "\n";
+		}
+
+		printf "\nNumber of installed devices:\n";
+		for {i in N} {
+			if y[i] > 0 then {
+				printf "%2d: %.3f\n", i, y[i];
+			}
+		}
+
+		printf "\nNumber of installed channels:\n";
+		for {(i, j) in A} {
+			if z[i, j] > 0 then {
+				printf "%2d -> %2d: %.3f\n", i, j, z[i, j];
+			}
+		}
+	}
+}
