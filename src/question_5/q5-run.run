@@ -1,0 +1,115 @@
+reset;
+
+param debug := 0;
+
+option solver 'gurobi';
+option solver_msg 0;
+
+model "Q4-parameters.mod";
+
+param start_time;
+param end_time;
+param total_time_wo_cuts;
+param total_time_w_cuts;
+
+param dist{i in N, j in N} default 999999;
+param a{N,N} default 0;
+
+model "q5-model.mod";
+
+problem q5_wo_cuts: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity, AssignedDevice;
+problem q5_w_cuts: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity, AssignedDevice, NodeCut;
+
+for {inst in 1..7} {
+	reset data;
+	data ("q4-i" & inst & ".dat");
+
+	printf "\n========================================\n";
+	printf "INSTANCE %d\n", inst;
+	printf "========================================\n";
+
+
+	let start_time := _ampl_time;
+
+	# Initialize distance matrix
+	for {k in N} {
+		let dist[k, k] := 0;
+	}
+	for {(i, j) in A} {
+		let dist[i, j] := t[i, j];
+	}
+
+	# Floyd-Warshall algorithm
+	for {k in N} {
+		for {i in N} {
+			for {j in N} {
+				if dist[i, k] + dist[k, j] < dist[i, j] then
+					let dist[i, j] := dist[i, k] + dist[k, j];
+			}
+		}
+	}
+	for {k in N} {
+		for {i in N} {
+			if d[k] > 0 and dist[k, i] <= T then {
+				let a[k, i] := 1;
+			}
+		}
+	}
+
+	# Force already known variables
+
+	# If node i is unreachable from node k, it cannot serve it
+	for {k in N, i in N : a[k, i] = 0 and i <> k} {
+		let x[k, i] := 0;
+		fix x[k, i];
+	}
+
+	# If any node of an arch (i, j) is unreachable from node k, it cannot serve it
+	for {k in N, (i, j) in A : a[k, i] = 0 or a[k, j] = 0} {
+		let w[k, i, j] := 0;
+		fix w[k, i, j];
+	}
+
+	# If a node has 0 demand, it will serve itself
+	for {k in N : d[k] = 0} {
+		let x[k, k] := 1;
+		fix x[k, k];
+	}
+
+	let end_time := _ampl_time;
+
+	solve q5_wo_cuts;
+	let total_time_wo_cuts := end_time - start_time + _solve_time;
+	printf "Total cost without cuts: %3g ( %.3f s )\n", TotalCost, total_time_wo_cuts;
+
+	solve q5_w_cuts;
+	let total_time_w_cuts := end_time - start_time + _solve_time;
+	printf "Total cost with cuts: %3g ( %.3f s )\n", TotalCost, total_time_w_cuts;
+	
+	if debug then {
+		printf "\nAssignments:\n";
+		for {i in N} {
+			printf "%2d -> ", i;
+			for {j in N} {
+				if x[i, j] > 0 then {
+					printf " (%2d, %.3f) ", j, x[i, j];
+				}
+			}
+			printf "\n";
+		}
+
+		printf "\nNumber of installed devices:\n";
+		for {i in N} {
+			if y[i] > 0 then {
+				printf "%2d: %.3f\n", i, y[i];
+			}
+		}
+
+		printf "\nNumber of installed channels:\n";
+		for {(i, j) in A} {
+			if z[i, j] > 0 then {
+				printf "%2d -> %2d: %.3f\n", i, j, z[i, j];
+			}
+		}
+	}
+}
