@@ -9,6 +9,8 @@ model "Q4-parameters.mod";
 
 param start_time;
 param end_time;
+param precomputation_time;
+param total_time_relaxation;
 param total_time_wo_cuts;
 param total_time_w_cuts;
 
@@ -17,6 +19,7 @@ param a{N,N} default 0;
 
 model "q5-model.mod";
 
+problem q4_relaxiation: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity;
 problem q5_wo_cuts: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity, AssignedDevice;
 problem q5_w_cuts: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity, AssignedDevice, NodeCut;
 
@@ -77,13 +80,18 @@ for {inst in 1..7} {
 	}
 
 	let end_time := _ampl_time;
+	let precomputation_time := end_time - start_time;
+
+	solve q4_relaxiation;
+	let total_time_relaxation := end_time - start_time + _solve_time;
+	printf "Total cost linear relaxation: %3g ( %.3f s )\n", TotalCost, total_time_relaxation;
 
 	solve q5_wo_cuts;
-	let total_time_wo_cuts := end_time - start_time + _solve_time;
+	let total_time_wo_cuts := precomputation_time + _solve_time;
 	printf "Total cost without cuts: %3g ( %.3f s )\n", TotalCost, total_time_wo_cuts;
 
 	solve q5_w_cuts;
-	let total_time_w_cuts := end_time - start_time + _solve_time;
+	let total_time_w_cuts := precomputation_time + _solve_time;
 	printf "Total cost with cuts: %3g ( %.3f s )\n", TotalCost, total_time_w_cuts;
 	
 	if debug then {
