@@ -22,5 +22,5 @@ s.t. FlowConservation{k in N, i in N : a[k, i] = 1}:
 	sum{(i, j) in A : a[k, j] = 1} w[k, i, j] - sum{(j, i) in A : a[k, j] = 1} w[k, j, i] =
 		if i == k then (1 - x[k, k]) else (-x[k, i]);
 
-s.t. Cover{i in N}:
-	sum{k in EC[i]} x[k, i] <= max(0, CC[i] - 1 + B * (y[i] - 1));
+s.t. Cover{cov in Covers}:
+	sum{k in ExtCovers[cov]} x[k, CoverTarget[cov]] <= max(0, CoverCard[cov] - 1 + B * (y[CoverTarget[cov]] - 1));

@@ -17,14 +17,23 @@ param dist{i in N, j in N} default 999999;
 param a{N,N} default 0;
 
 param B default 99999999;
-set EC{N} within N;
-param CC{N};
+param improvement_threshold := 0.01;
 
+param num_covers default 0;
+set Covers := 1..num_covers;
+set ExtCovers{Covers} within N;
+param CoverCard{Covers};
+param CoverTarget{Covers} within N;
+
+param iter default 0;
 set reachable_nodes;
-param cover_capacity;
-set smallest_demands ordered;
-param demand_to_add;
-param cover_cardinality;
+set biggest_ratio ordered;
+param chosen_node;
+param cover_size;
+param old_objective;
+param new_cover_card;
+set new_minimum_cover;
+param max_cover_demand;
 
 
 model "q6-model.mod";
@@ -96,32 +105,64 @@ for {inst in 1..7} {
 
 	let start_time := _ampl_time;
 
-	# Generate minimum covers
 	let B := nb_n * 10;
-	for {i in N} {
-		let reachable_nodes := setof{k in N : a[k, i] = 1} k;
-		let cover_capacity := 0;
-		let cover_cardinality := 0;
-
-		repeat {
-			let smallest_demands := setof{j in reachable_nodes : d[j] = min{jj in reachable_nodes} d[jj]} j;
-			let demand_to_add := first(smallest_demands);
-			let cover_capacity := cover_capacity + d[demand_to_add];
-			let reachable_nodes := reachable_nodes diff {demand_to_add};
-			let cover_cardinality := cover_cardinality + 1;
-		} while (cover_capacity <= cap[i] and card(reachable_nodes) > 0);
-
-		let CC[i] := cover_cardinality;
-		let EC[i] := setof{k in N : a[k, i] = 1} k;
+	let iter := 0;
+	let old_objective := TotalCost;
+	if debug >= 1 then {
+		printf "\n";
 	}
 
-	let end_time := _ampl_time;
+	repeat {
+		let iter := iter + 1;
 
-	solve q6_w_covers;
-	let total_time_w_covers := precomputation_time + end_time - start_time + _solve_time;
-	printf "Total cost with covers: %3g ( %.3f s )\n", TotalCost, total_time_w_covers;
+		solve q6_w_covers;
+		let start_time := start_time - _solve_time;  # Add solve time to total time
+
+		if iter > 1 and (TotalCost - old_objective) < improvement_threshold then {
+			break;
+		}
+		let old_objective := TotalCost;
+		if debug >= 1 then {
+			printf "Total cost with %d covers: %3g\n", num_covers, TotalCost;
+		}
+
+		for {i in N} {
+			# Select nodes by descending x_{ki} * d_k order
+			let reachable_nodes := setof{k in N : a[k, i] = 1} k;
+			let cover_size := 0;
+			let new_cover_card := 0;
+			let new_minimum_cover := {};
+
+			repeat {
+				# Select the node with the biggest x_{ki} * d_k
+				let biggest_ratio := setof{k in reachable_nodes : x[k, i] * d[k] = max{kk in reachable_nodes} x[kk, i] * d[kk]} k;
+				let chosen_node := first(biggest_ratio);
+				let cover_size := cover_size + d[chosen_node];
+				let reachable_nodes := reachable_nodes diff {chosen_node};
+				let new_cover_card := new_cover_card + 1;
+				let new_minimum_cover := new_minimum_cover union {chosen_node};
+			} while (cover_size <= cap[i] and card(reachable_nodes) > 0);
+
+			# If this is not a cover, continue
+			if cover_size <= cap[i] then {
+				continue;
+			}
+
+			let num_covers := num_covers + 1;
+			let CoverCard[num_covers] := new_cover_card;
+			let ExtCovers[num_covers] := new_minimum_cover;
+			let CoverTarget[num_covers] := i;
+
+			# We can extend the cover by adding all the nodes with a bigger demand than the maximum demand of the minimum cover
+			let max_cover_demand := max{k in ExtCovers[num_covers]} d[k];
+			let ExtCovers[num_covers] := ExtCovers[num_covers] union setof{k in reachable_nodes : d[k] >= max_cover_demand} k;
+		}
+	}
+
+	let total_time_w_covers := precomputation_time + end_time - start_time;
+	printf "Total cost with %d covers: %3g ( %.3f s ; %d iterations )\n", num_covers, TotalCost, total_time_w_covers, iter;
 	
-	if debug then {
+	if debug >= 2 then {
 		printf "\nAssignments:\n";
 		for {i in N} {
 			printf "%2d -> ", i;
