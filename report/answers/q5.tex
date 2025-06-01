@@ -1,0 +1,85 @@
+\section{Question 5}
+
+\subsubsection*{New constraints}
+
+The problem is equivalent to a multicommodity flow problem where we don't know a priori the demands' targets. We recall the single node cut set inequalities to be:
+$$
+\sum_{(k, i) \in A} u \; z_{ki} \geq d_k \quad \forall k \in N \mid d_k > 0
+$$
+Which can be rewritten to reduce the feasible region of the continuous relaxation, without changing the integer feasible region:
+$$
+\sum_{(k, i) \in A} z_{ki} \geq \left \lceil {d_k \over u} \right \rceil \quad \forall k \in N \mid d_k > 0
+$$
+This requires to be adjusted to account self serving nodes. It can be done by nullifying the constraint in the case a node is serving itself:
+$$
+\sum_{(k, i) \in A} u \; z_{ki} \geq (1 - x_{kk}) \; d_k \quad \forall k \in N \mid d_k > 0
+$$
+Which will be rewritten as:
+$$
+\sum_{(k, i) \in A} z_{ki} \geq (1 - x_{kk}) \left \lceil {d_k \over u} \right \rceil \quad \forall k \in N \mid d_k > 0
+$$
+
+There is still one problem: for the provided instances and the way we formulated the model in question 4, the optimal solution of the continuous relaxation is just to let every node to serve itself, installing a fraction of a device to satisfy its demand. This way there is no flow in the arcs and the cut set inequalities would be useless.  \\
+
+To fix this issue, we introduce an additional helper constraint:
+$$
+x_{ki} \leq y_i \quad \forall k \in N, i \in N \mid M_{ki} = 1
+$$
+This way, if a node wants to completely serve another node or itself, it must install a whole device. Since $x_{ki}$ is binary and $y_i$ integer, it is trivial to see that no integer solution is removed by this constraint.
+
+\newpage
+\subsubsection*{Results}
+
+Linear relaxation (equivalent to linear relaxation + single node cuts):
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Instance} & \textbf{Optimal value} & \textbf{o.f. $-$ integer o.f.} & \textbf{Solver CPU time (s)} \\
+		\hline
+		1 &  28.669 &  56.33 ( 66.27 \% ) & 0.022 \\ \hline
+		2 & 157.299 & 170.70 ( 52.04 \% ) & 0.020 \\ \hline
+		3 & 157.299 & 218.70 ( 58.17 \% ) & 0.013 \\ \hline
+		4 & 106.416 &  42.58 ( 28.58 \% ) & 0.020 \\ \hline
+		5 & 106.416 &  47.58 ( 30.90 \% ) & 0.028 \\ \hline
+		6 &  99.705 & 324.30 ( 76.48 \% ) & 0.065 \\ \hline
+		7 &  99.705 & 320.30 ( 76.26 \% ) & 0.079 \\ \hline
+	\end{tabular}
+	\label{tab:instance_costs}
+\end{table}
+
+Linear relaxation + helper constraints:
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Instance} & \textbf{Optimal value} & \textbf{o.f. $-$ integer o.f.} & \textbf{Solver CPU time (s)} \\
+		\hline
+		1 &  79.061 &   5.94 (  6.99 \% ) & 0.017 \\ \hline
+		2 & 303.310 &  24.69 (  7.53 \% ) & 0.014 \\ \hline
+		3 & 349.518 &  26.48 (  7.04 \% ) & 0.014 \\ \hline
+		4 & 115.983 &  33.02 ( 22.16 \% ) & 0.023 \\ \hline
+		5 & 107.492 &  46.51 ( 30.20 \% ) & 0.033 \\ \hline
+		6 & 160.606 & 263.39 ( 62.12 \% ) & 0.085 \\ \hline
+		7 & 160.606 & 259.39 ( 61.76 \% ) & 0.082 \\ \hline
+	\end{tabular}
+	\label{tab:instance_costs}
+\end{table}
+
+Linear relaxation + helper constraints + single node cuts:
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Instance} & \textbf{Optimal value} & \textbf{o.f. $-$ integer o.f.} & \textbf{Solver CPU time (s)} \\
+		\hline
+		1 &  83.018 &  1.98 ( 2.33 \% ) & 0.018 \\ \hline
+		2 & 310.035 & 17.96 ( 5.48 \% ) & 0.021 \\ \hline
+		3 & 360.366 & 15.63 ( 4.16 \% ) & 0.014 \\ \hline
+		4 & 138.967 & 10.03 ( 6.73 \% ) & 0.028 \\ \hline
+		5 & 140.057 & 13.94 ( 9.05 \% ) & 0.027 \\ \hline
+		6 & 406.845 & 17.15 ( 4.05 \% ) & 0.094 \\ \hline
+		7 & 406.764 & 13.24 ( 3.15 \% ) & 0.092 \\ \hline
+	\end{tabular}
+	\label{tab:instance_costs}
+\end{table}
