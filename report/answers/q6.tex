@@ -1,0 +1,86 @@
+\section{Question 6}
+
+\subsubsection*{New constraint}
+
+We have two knapsack constraints in question 4, the second for the devices capacity and the third one for the channels capacity. We focus on the devices only, since they are way more effective and considering the channels would lead to a huge number of additional constraints.  \\
+
+To be able to generate our cover constraints, for each node $i$ we assume the items to be the demands of the nodes $k$ that can reach $i$ and the knapsack capacity to be the one of one single device $cap_i$. This works well for our instances, since we never have to install more than one device (both in the continuous relaxation and in the integer oprimal solution).
+We can generate a cover with these parameters, but we need to keep in mind that they might be wrong, since I can have no device or multiple devices installed on one node. Thus the cover constraint for a cover $C$ will be:
+$$
+\sum_{k \in \varepsilon(C)} x_{ki} \leq \max(0, |C| - 1 + B \cdot (y_i - 1)) \quad \forall i \in N
+$$
+
+\begin{itemize}
+	\item The max function is not linear, but can be replaced using an additional variable, which must be greater than both arguments of the function.
+	\item $\varepsilon(C)$ is the extended cover of $C$.
+	\item $C$ and $\varepsilon(C)$ never contains nodes which have zero demand.
+	\item $B$ is a big constant.
+\end{itemize}
+
+Let's consider the integer solutions and check that none is eliminated by this constraint.
+\begin{itemize}
+	\item If $y_i$ is zero, no device is installed and no node can be assigned to $i$ and, indeed, we have zero on the right hand side, since $B \gg |C| - 1$.
+	\item If $y_i$ is one, this is the original extended cover inequality.
+	\item If $y_i$ is greater than one, the constraint is always satisfied, again, because $B \gg |C| - 1 < \varepsilon(C)$.
+\end{itemize}
+
+By looking at the continuous relaxation, we can see that not only we have the benefits of the standard cover inequality, but we are also forcing $y_i$ to be greater or equal than one, eliminating the possibility of a fractional number of devices between zero and one, which is our biggest concern for the provided instances. This is because if we try to install a number of devices which is slightly less than one, the whole right hand side gets dominated by the $B \cdot (y_i - 1)$ term, bringing everything to zero and preventing the assignment of any node in $\varepsilon(C)$ to $i$.
+
+\newpage
+\subsubsection*{Cover heuristic}
+
+We use the following procedure to generate the cover inequalities:
+\begin{enumerate}
+	\item Solve the continuous relaxation.
+	\item If the new objective function increased by less than a relative threshold, then stop.
+	\item For each node $i \in N$:
+	\begin{enumerate}[label*=\arabic*.]
+		\item Sort the nodes that can reach $i$ by $x^*_{ki} \cdot d_k$ in descending order (break ties with indices).
+		\item Get elements from the sorted list until the sum of their demands is greater than $cap_i$.
+		\item If we cannot exceed $cap_i$, do nothing and continue to the next node.
+		\item Extend the cover by adding all the nodes which demand is greater than the biggest demand of the nodes inside the minimum cover.
+		\item Add the cover constraint using the extended cover and the cardinality of the minimum cover.
+	\end{enumerate}
+	\item Go to step 1.
+\end{enumerate}
+
+\newpage
+\subsubsection*{Results}
+
+Linear relaxation:
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Instance} & \textbf{Optimal value} & \textbf{o.f. $-$ integer o.f.} & \textbf{CPU time (s)} \\
+		\hline
+		1 &  28.669 &  56.33 ( 66.27 \% ) & 0.022 \\ \hline
+		2 & 157.299 & 170.70 ( 52.04 \% ) & 0.020 \\ \hline
+		3 & 157.299 & 218.70 ( 58.17 \% ) & 0.013 \\ \hline
+		4 & 106.416 &  42.58 ( 28.58 \% ) & 0.020 \\ \hline
+		5 & 106.416 &  47.58 ( 30.90 \% ) & 0.028 \\ \hline
+		6 &  99.705 & 324.30 ( 76.48 \% ) & 0.065 \\ \hline
+		7 &  99.705 & 320.30 ( 76.26 \% ) & 0.079 \\ \hline
+	\end{tabular}
+\end{table}
+\\
+Linear relaxation + cover inequalities ($B = 10 \cdot |N|$, $threshold = 1\%$):
+\begin{center}
+	\centering
+	\makebox[0cm] {
+		\begin{tabular}{|c|c|c|c|c|c|}
+			\hline
+			\textbf{Instance} & \textbf{Optimal value} & \textbf{Covers} & \textbf{Iterations} & \textbf{o.f. $-$ integer o.f.} & \textbf{CPU time (s)} \\
+			\hline
+			1 &  78.350 &  36 & 4 &   6.65 (  7.82 \% ) &  0.315 \\ \hline
+			2 & 280.032 &  30 & 4 &  47.97 ( 14.62 \% ) &  0.298 \\ \hline
+			3 & 188.458 &   6 & 3 & 187.54 ( 49.88 \% ) &  0.055 \\ \hline
+			4 & 113.583 &  24 & 3 &  35.42 ( 23.77 \% ) &  0.375 \\ \hline
+			5 & 106.746 &   7 & 2 &  47.25 ( 30.68 \% ) &  0.072 \\ \hline
+			6 & 161.551 & 135 & 6 & 262.45 ( 61.90 \% ) & 15.141 \\ \hline
+			7 & 162.889 & 162 & 7 & 257.11 ( 61.22 \% ) & 31.358 \\ \hline
+		\end{tabular}
+	}
+\end{center}
+
+Unfortunately, the proposed solution is neither efficient nor effective in most cases. The most likely cause is the fact that the capacities we are dealing with are not constant.

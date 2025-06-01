@@ -1,0 +1,191 @@
+reset;
+
+param debug := 0;
+
+option solver 'gurobi';
+option solver_msg 0;
+
+model "Q4-parameters.mod";
+
+param start_time;
+param end_time;
+param precomputation_time;
+param total_time_wo_covers;
+param total_time_w_covers;
+
+param dist{i in N, j in N} default 999999;
+param a{N,N} default 0;
+
+param B default 99999999;
+param improvement_relative_threshold := 0.01;
+
+param num_covers default 0;
+set Covers := 1..num_covers;
+set ExtCovers{Covers} within N;
+param CoverCard{Covers};
+param CoverTarget{Covers} within N;
+
+param iter default 0;
+set reachable_nodes;
+set biggest_ratio ordered;
+param chosen_node;
+param cover_size;
+param old_objective;
+param new_cover_card;
+set new_minimum_cover;
+param max_cover_demand;
+
+
+model "q6-model.mod";
+
+problem q6_wo_covers: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity;
+problem q6_w_covers: x, y, z, w, TotalCost, Assignment, FlowConservation, DelayConstraint, ProcessingCapacity, ChannelCapacity, Cover;
+
+for {inst in 1..7} {
+	reset data;
+	data ("q4-i" & inst & ".dat");
+
+	printf "\n========================================\n";
+	printf "INSTANCE %d\n", inst;
+	printf "========================================\n";
+
+	let start_time := _ampl_time;
+
+	# Initialize distance matrix
+	for {k in N} {
+		let dist[k, k] := 0;
+	}
+	for {(i, j) in A} {
+		let dist[i, j] := t[i, j];
+	}
+
+	# Floyd-Warshall algorithm
+	for {k in N} {
+		for {i in N} {
+			for {j in N} {
+				if dist[i, k] + dist[k, j] < dist[i, j] then
+					let dist[i, j] := dist[i, k] + dist[k, j];
+			}
+		}
+	}
+	for {k in N} {
+		for {i in N} {
+			if d[k] > 0 and dist[k, i] <= T then {
+				let a[k, i] := 1;
+			}
+		}
+	}
+
+	# Force already known variables
+
+	# If node i is unreachable from node k, it cannot serve it
+	for {k in N, i in N : a[k, i] = 0 and i <> k} {
+		let x[k, i] := 0;
+		fix x[k, i];
+	}
+
+	# If any node of an arch (i, j) is unreachable from node k, it cannot serve it
+	for {k in N, (i, j) in A : a[k, i] = 0 or a[k, j] = 0} {
+		let w[k, i, j] := 0;
+		fix w[k, i, j];
+	}
+
+	# If a node has 0 demand, it will serve itself
+	for {k in N : d[k] = 0} {
+		let x[k, k] := 1;
+		fix x[k, k];
+	}
+
+	let end_time := _ampl_time;
+	let precomputation_time := end_time - start_time;
+
+	solve q6_wo_covers;
+	let total_time_wo_covers := precomputation_time + _solve_time;
+	printf "Total cost without covers: %3g ( %.3f s )\n", TotalCost, total_time_wo_covers;
+
+	let start_time := _ampl_time;
+
+	let B := nb_n * 10;
+	let iter := 0;
+	let old_objective := TotalCost;
+	if debug >= 1 then {
+		printf "\n";
+	}
+
+	repeat {
+		let iter := iter + 1;
+
+		solve q6_w_covers;
+		let start_time := start_time - _solve_time;  # Add solve time to total time
+
+		if iter > 1 and (TotalCost - old_objective) / old_objective < improvement_relative_threshold then {
+			break;
+		}
+		let old_objective := TotalCost;
+		if debug >= 1 then {
+			printf "Total cost with %d covers: %3g\n", num_covers, TotalCost;
+		}
+
+		for {i in N} {
+			# Select nodes by descending x_{ki} * d_k order
+			let reachable_nodes := setof{k in N : a[k, i] = 1} k;
+			let cover_size := 0;
+			let new_cover_card := 0;
+			let new_minimum_cover := {};
+
+			repeat {
+				# Select the node with the biggest x_{ki} * d_k
+				let biggest_ratio := setof{k in reachable_nodes : x[k, i] * d[k] = max{kk in reachable_nodes} x[kk, i] * d[kk]} k;
+				let chosen_node := first(biggest_ratio);
+				let cover_size := cover_size + d[chosen_node];
+				let reachable_nodes := reachable_nodes diff {chosen_node};
+				let new_cover_card := new_cover_card + 1;
+				let new_minimum_cover := new_minimum_cover union {chosen_node};
+			} while (cover_size <= cap[i] and card(reachable_nodes) > 0);
+
+			# If this is not a cover, continue
+			if cover_size <= cap[i] then {
+				continue;
+			}
+
+			let num_covers := num_covers + 1;
+			let CoverCard[num_covers] := new_cover_card;
+			let ExtCovers[num_covers] := new_minimum_cover;
+			let CoverTarget[num_covers] := i;
+
+			# We can extend the cover by adding all the nodes with a bigger demand than the maximum demand of the minimum cover
+			let max_cover_demand := max{k in ExtCovers[num_covers]} d[k];
+			let ExtCovers[num_covers] := ExtCovers[num_covers] union setof{k in reachable_nodes : d[k] >= max_cover_demand} k;
+		}
+	}
+
+	let total_time_w_covers := precomputation_time + end_time - start_time;
+	printf "Total cost with %d covers: %3g ( %.3f s ; %d iterations )\n", num_covers, TotalCost, total_time_w_covers, iter;
+	
+	if debug >= 2 then {
+		printf "\nAssignments:\n";
+		for {i in N} {
+			printf "%2d -> ", i;
+			for {j in N} {
+				if x[i, j] > 0 then {
+					printf " (%2d, %.3f) ", j, x[i, j];
+				}
+			}
+			printf "\n";
+		}
+
+		printf "\nNumber of installed devices:\n";
+		for {i in N} {
+			if y[i] > 0 then {
+				printf "%2d: %.3f\n", i, y[i];
+			}
+		}
+
+		printf "\nNumber of installed channels:\n";
+		for {(i, j) in A} {
+			if z[i, j] > 0 then {
+				printf "%2d -> %2d: %.3f\n", i, j, z[i, j];
+			}
+		}
+	}
+}
