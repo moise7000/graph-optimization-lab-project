@@ -1,6 +1,6 @@
 \section{Question 6}
 
-\subsubsection{New constraint}
+\subsubsection*{New constraint}
 
 We have two knapsack constraints in question 4, the second for the devices capacity and the third one for the channels capacity. We focus on the devices only, since they are way more effective and considering the channels would lead to a huge number of additional constraints.  \\
 
@@ -25,3 +25,21 @@ Let's consider the integer solutions and check that none is eliminated by this c
 \end{itemize}
 
 By looking at the continuous relaxation, we can see that not only we have the benefits of the standard cover inequality, but we are also forcing $y_i$ to be greater or equal than one, eliminating the possibility of a fractional number of devices between zero and one, which is our biggest concern for the provided instances. This is because if we try to install a number of devices which is slightly less than one, the whole right hand side gets dominated by the $B \cdot (y_i - 1)$ term, bringing everything to zero and preventing the assignment of any node in $\varepsilon(C)$ to $i$.
+
+\newpage
+\subsubsection*{Cover heuristic}
+
+We use the following procedure to generate the cover inequalities:
+\begin{enumerate}
+	\item Solve the continuous relaxation.
+	\item If the new objective function increased by less than a relative threshold, then stop.
+	\item For each node $i \in N$:
+	\begin{enumerate}[label*=\arabic*.]
+		\item Sort the nodes that can reach $i$ by $x^*_{ki} \cdot d_k$ in descending order (break ties with indices).
+		\item Get elements from the sorted list until the sum of their demands is greater than $cap_i$.
+		\item If we cannot exceed $cap_i$, do nothing and continue to the next node.
+		\item Extend the cover by adding all the nodes which demand is greater than the biggest demand of the nodes inside the minimum cover.
+		\item Add the cover constraint using the extended cover and the cardinality of the minimum cover.
+	\end{enumerate}
+	\item Go to step 1.
+\end{enumerate}
