@@ -17,7 +17,7 @@ param dist{i in N, j in N} default 999999;
 param a{N,N} default 0;
 
 param B default 99999999;
-param improvement_threshold := 0.01;
+param improvement_relative_threshold := 0.01;
 
 param num_covers default 0;
 set Covers := 1..num_covers;
@@ -118,7 +118,7 @@ for {inst in 1..7} {
 		solve q6_w_covers;
 		let start_time := start_time - _solve_time;  # Add solve time to total time
 
-		if iter > 1 and (TotalCost - old_objective) < improvement_threshold then {
+		if iter > 1 and (TotalCost - old_objective) / old_objective < improvement_relative_threshold then {
 			break;
 		}
 		let old_objective := TotalCost;
