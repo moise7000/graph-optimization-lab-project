@@ -9,12 +9,12 @@ minimize TotalCost: sum{i in N} c[i] * x[i];
 
 # Constraints
 # Coverage constraint: each node must be served by exactly one device
-subject to Coverage{i in N}:
-sum{j in N : a[i,j] } y[i,j] = 1;
+subject to Coverage{j in N}:
+sum{i in N } a[i,j] * x[i] >= 1;
 
 # Service constraint: a node can only be served by an installed device
-subject to Service{i in N, j in N}:
-y[i,j] <= x[j];
+#subject to Service{i in N, j in N}:
+#y[i,j] <= x[j];
 
 # Distance constraint: service only allowed within time threshold
 #subject to Distance{i in N, j in N}:

@@ -18,7 +18,7 @@ model Q1-model.mod;
 
 
 
-problem q1: x, y, TotalCost, Coverage, Service;
+problem q1: x, TotalCost, Coverage;
 # Solver settings
 option solver 'gurobi';
 option solver_msg 0;
