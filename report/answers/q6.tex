@@ -1,0 +1,27 @@
+\section{Question 6}
+
+\subsubsection{New constraint}
+
+We have two knapsack constraints in question 4, the second for the devices capacity and the third one for the channels capacity. We focus on the devices only, since they are way more effective and considering the channels would lead to a huge number of additional constraints.  \\
+
+To be able to generate our cover constraints, for each node $i$ we assume the items to be the demands of the nodes $k$ that can reach $i$ and the knapsack capacity to be the one of one single device $cap_i$. This works well for our instances, since we never have to install more than one device (both in the continuous relaxation and in the integer oprimal solution).
+We can generate a cover with these parameters, but we need to keep in mind that they might be wrong, since I can have no device or multiple devices installed on one node. Thus the cover constraint for a cover $C$ will be:
+$$
+\sum_{k \in \varepsilon(C)} x_{ki} \leq \max(0, |C| - 1 + B \cdot (y_i - 1)) \quad \forall i \in N
+$$
+
+\begin{itemize}
+	\item The max function is not linear, but can be replaced using an additional variable, which must be greater than both arguments of the function.
+	\item $\varepsilon(C)$ is the extended cover of $C$.
+	\item $C$ and $\varepsilon(C)$ never contains nodes which have zero demand.
+	\item $B$ is a big constant.
+\end{itemize}
+
+Let's consider the integer solutions and check that none is eliminated by this constraint.
+\begin{itemize}
+	\item If $y_i$ is zero, no device is installed and no node can be assigned to $i$ and, indeed, we have zero on the right hand side, since $B \gg |C| - 1$.
+	\item If $y_i$ is one, this is the original extended cover inequality.
+	\item If $y_i$ is greater than one, the constraint is always satisfied, again, because $B \gg |C| - 1 < \varepsilon(C)$.
+\end{itemize}
+
+By looking at the continuous relaxation, we can see that not only we have the benefits of the standard cover inequality, but we are also forcing $y_i$ to be greater or equal than one, eliminating the possibility of a fractional number of devices between zero and one, which is our biggest concern for the provided instances. This is because if we try to install a number of devices which is slightly less than one, the whole right hand side gets dominated by the $B \cdot (y_i - 1)$ term, bringing everything to zero and preventing the assignment of any node in $\varepsilon(C)$ to $i$.
