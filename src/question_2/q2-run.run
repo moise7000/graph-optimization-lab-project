@@ -18,6 +18,9 @@ param nodeValues{i in N} := c[i] / (1 + sum {k in notServed} M[i, k]);
 set cheapestNodes ordered := setof{i in notSearched : nodeValues[i] = min{j in notSearched} nodeValues[j]} i;
 param cheapestNode;
 
+param start_time;
+param end_time;
+
 for {inst in 1..4} {
     printf "\n========================================\n";
     printf "INSTANCE %d\n", inst;
@@ -27,6 +30,7 @@ for {inst in 1..4} {
     reset data;
     data ("q1-instance-" & inst & ".dat");
 
+	let start_time := _ampl_time;
 
     for {i in N, j in N: i != j} {
             let d[i,j] := 999999;
@@ -62,5 +66,7 @@ for {inst in 1..4} {
         let y[cheapestNode] := 1;
     } while (card(notServed) > 0);
 
-    printf "objective function: %d\n", sum{i in N} y[i] * c[i];
+	let end_time := _ampl_time;
+
+    printf "objective function: %d ( %.3f s )\n", sum{i in N} y[i] * c[i], end_time - start_time;
 }

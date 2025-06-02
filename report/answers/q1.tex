@@ -11,7 +11,7 @@ Let's write down the model. First we have the following sets and parameters:
 	\item $M = (M_{ij})_{i,j \in N}$ a reachability matrix, such that $M_{ij}$ is equal to one if $d_{i,j} \le T$, zero otherwise.
 \end{itemize}
 
-and those decision variables:
+and these decision variables:
 \begin{itemize}
 	\item $y_i \in \{0,1\}$, a binary variable equal to one if a device is installed at node $i \in N$, zero otherwise.
 
@@ -19,9 +19,9 @@ and those decision variables:
 \end{itemize}
 
 The objective function is then
-\begin{equation}
-	\min \sum_{i \in N} c_i y_i
-\end{equation}
+	\[
+		\min \sum_{i \in N} c_i y_i
+	\]
 
 and is subject to the following constraints:
 \begin{itemize}
@@ -36,7 +36,7 @@ and is subject to the following constraints:
 \newpage
 
 \subsubsection*{Result}
-We obtain the following
+We obtain the following results:
 
 \begin{table}[h]
 	\centering
@@ -44,15 +44,14 @@ We obtain the following
 		\hline
 		\textbf{Instance} & \textbf{Optimal value} & \textbf{Selected nodes} & \textbf{CPU time (s)} \\
 		\hline
-		1 & 2 & 2; 5 & 0.268 \\
+		1 & 2 & 2; 5 & 0.016 \\
 		\hline
-		2 & 25 & 13; 17; 19 & 0.081 \\
+		2 & 25 & 13; 17; 19 & 0.035 \\
 		\hline
-		3 & 129 & 1; 7; 13; 15; 21; 22; 28; 29; 34 & 0.127 \\
+		3 & 129 & 1; 7; 13; 15; 21; 22; 28; 29; 34 & 0.138 \\
 		\hline
-		4 & 256 & 11; 12; 14; 16; 17; 18; 26; 27; 36; 43; 46; 51; 53; 54; 57; 60; 66; 71; 75; 76 & 0.456 \\
+		4 & 256 & 11; 12; 14; 16; 17; 18; 26; 27; 36; 43; 46; 51; 53; 54; 57; 60; 66; 71; 75; 76 & 0.732 \\
 		\hline
 	\end{tabularx}
-	\caption{Results for each instance}
 	\label{tab:instance_costs}
 \end{table}

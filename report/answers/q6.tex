@@ -1,8 +1,8 @@
 \section{Question 6}
 
-\subsubsection*{New constraint}
+\subsubsection*{New constraints}
 
-We have two knapsack constraints in question 4, the second for the devices capacity and the third one for the channels capacity. We focus on the devices only, since they are way more effective and considering the channels would lead to a huge number of additional constraints.  \\
+We have two knapsack constraints in question 4, the second, for the devices capacity and the third one, for the channels capacity. We focus on the devices only, since they are way more effective and considering the channels would lead to a huge number of additional constraints.  \\
 
 To be able to generate our cover constraints, for each node $i$ we assume the items to be the demands of the nodes $k$ that can reach $i$ and the knapsack capacity to be the one of one single device $cap_i$. This works well for our instances, since we never have to install more than one device (both in the continuous relaxation and in the integer oprimal solution).
 We can generate a cover with these parameters, but we need to keep in mind that they might be wrong, since I can have no device or multiple devices installed on one node. Thus the cover constraint for a cover $C$ will be:
@@ -20,8 +20,8 @@ $$
 Let's consider the integer solutions and check that none is eliminated by this constraint.
 \begin{itemize}
 	\item If $y_i$ is zero, no device is installed and no node can be assigned to $i$ and, indeed, we have zero on the right hand side, since $B \gg |C| - 1$.
-	\item If $y_i$ is one, this is the original extended cover inequality.
-	\item If $y_i$ is greater than one, the constraint is always satisfied, again, because $B \gg |C| - 1 < \varepsilon(C)$.
+	\item If $y_i$ is one, it is the standard extended cover inequality.
+	\item If $y_i$ is greater than one, the constraint is always satisfied, again, because $B \gg |C| - 1 < |\varepsilon(C)|$.
 \end{itemize}
 
 By looking at the continuous relaxation, we can see that not only we have the benefits of the standard cover inequality, but we are also forcing $y_i$ to be greater or equal than one, eliminating the possibility of a fractional number of devices between zero and one, which is our biggest concern for the provided instances. This is because if we try to install a number of devices which is slightly less than one, the whole right hand side gets dominated by the $B \cdot (y_i - 1)$ term, bringing everything to zero and preventing the assignment of any node in $\varepsilon(C)$ to $i$.
@@ -32,12 +32,12 @@ By looking at the continuous relaxation, we can see that not only we have the be
 We use the following procedure to generate the cover inequalities:
 \begin{enumerate}
 	\item Solve the continuous relaxation.
-	\item If the new objective function increased by less than a relative threshold, then stop.
+	\item If the new objective function increased by less than a relative threshold with respect to the previous iteration, then stop.
 	\item For each node $i \in N$:
 	\begin{enumerate}[label*=\arabic*.]
 		\item Sort the nodes that can reach $i$ by $x^*_{ki} \cdot d_k$ in descending order (break ties with indices).
 		\item Get elements from the sorted list until the sum of their demands is greater than $cap_i$.
-		\item If we cannot exceed $cap_i$, do nothing and continue to the next node.
+		\item If we cannot exceed $cap_i$, do nothing and continue to the next node (next iteration of step 3).
 		\item Extend the cover by adding all the nodes which demand is greater than the biggest demand of the nodes inside the minimum cover.
 		\item Add the cover constraint using the extended cover and the cardinality of the minimum cover.
 	\end{enumerate}
@@ -52,7 +52,7 @@ Linear relaxation:
 	\centering
 	\begin{tabular}{|c|c|c|c|}
 		\hline
-		\textbf{Instance} & \textbf{Optimal value} & \textbf{o.f. $-$ integer o.f.} & \textbf{CPU time (s)} \\
+		\textbf{Instance} & \textbf{Optimal value} & \textbf{integer o.f. $-$ o.f.} & \textbf{CPU time (s)} \\
 		\hline
 		1 &  28.669 &  56.33 ( 66.27 \% ) & 0.022 \\ \hline
 		2 & 157.299 & 170.70 ( 52.04 \% ) & 0.020 \\ \hline
@@ -70,7 +70,7 @@ Linear relaxation + cover inequalities ($B = 10 \cdot |N|$, $threshold = 1\%$):
 	\makebox[0cm] {
 		\begin{tabular}{|c|c|c|c|c|c|}
 			\hline
-			\textbf{Instance} & \textbf{Optimal value} & \textbf{Covers} & \textbf{Iterations} & \textbf{o.f. $-$ integer o.f.} & \textbf{CPU time (s)} \\
+			\textbf{Instance} & \textbf{Optimal value} & \textbf{Covers} & \textbf{Iterations} & \textbf{integer o.f. $-$ o.f.} & \textbf{CPU time (s)} \\
 			\hline
 			1 &  78.350 &  36 & 4 &   6.65 (  7.82 \% ) &  0.315 \\ \hline
 			2 & 280.032 &  30 & 4 &  47.97 ( 14.62 \% ) &  0.298 \\ \hline

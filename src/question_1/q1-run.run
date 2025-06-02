@@ -13,7 +13,7 @@ param solve_time;
 param max_dist;
 param d{i in N, j in N} default 999999;
 param a{N,N} default 0;
-model Q1-model.mod;
+model q1-model.mod;
 
 
 
@@ -83,10 +83,10 @@ for {inst in 1..4} {
         }
         printf "\n";
         
-        # Verification
-        let max_dist := max{i in N, j in N: y[i,j] > 0.5} d[i,j];
-        printf "Max distance: %.3f (limit: %.0f)\n", max_dist, T;
-        printf "Feasible: %s\n", if max_dist <= T then "YES" else "NO";
+        # # Verification
+        # let max_dist := max{i in N, j in N: y[i,j] > 0.5} d[i,j];
+        # printf "Max distance: %.3f (limit: %.0f)\n", max_dist, T;
+        # printf "Feasible: %s\n", if max_dist <= T then "YES" else "NO";
     }
 }
 
