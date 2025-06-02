@@ -3,8 +3,7 @@ option solver gurobi;
 
 model Q1-parameters.mod;
 
-param x{N} default 0; # install device at node n?
-param y{N, N} default 0; # node is served by an installed device in x?
+param y{N} default 0; # install device at node n?
 
 param d{N, N} default 999999;  # Distance matrix
 param M{N, N} default 0;  # Reachability matrix
@@ -58,13 +57,10 @@ for {inst in 1..4} {
 		let cheapestNode := first(cheapestNodes);
         let searched[cheapestNode] := 1;
 
-        for{i in notServed : M[i, cheapestNode] = 1} {
-			let y[i, cheapestNode] := 1;
-			let served[i] := 1;
-        }
-
-        let x[cheapestNode] := 1;
+        for{i in notServed : M[i, cheapestNode] = 1} let served[i] := 1;
+        
+        let y[cheapestNode] := 1;
     } while (card(notServed) > 0);
 
-    printf "objective function: %d\n", sum{i in N} x[i] * c[i];
+    printf "objective function: %d\n", sum{i in N} y[i] * c[i];
 }
