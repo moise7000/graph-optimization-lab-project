@@ -10,31 +10,38 @@ Formally the node to be considered is determined:
 $$\text{select i} \in N^{Unsearched} | min(\frac{c_i}{1 + \sum{k \in N^{Unserved}}^{} M_{ij}})$$
 
 These are the steps taken by the algorithm at each iteration:
-\begin{itemize}
-	\item If solution is feasible end iteration.
+\begin{enumerate}
+	\item If solution is feasible then stop.
 	\item Consider the cheapest node using our defined heuristic.
-	\item If installing a device on that node can serve 1 or more unserved nodes then add it to the solution.
-\end{itemize}
+	\begin{enumerate}[label*=\arabic*.]
+		\item If installing a device on that node can serve 1 or more unserved nodes then add it to the solution.
+	\end{enumerate}
+	\item Go to step 1.
+\end{enumerate}
 
 A feasible solution will always be found as in worst case the algorithm will install a device on all nodes and this case is always a feasible solution.
 
+\newpage
 \subsubsection*{Results}
 
 \begin{table}[h!]
 	\centering
-	\begin{tabularx}{\textwidth}{|c|c|X|c|}
+	\begin{tabularx}{\textwidth}{|c|X|c|X|X|}
 		\hline
-		\textbf{Instance} & \textbf{Solution Cost} & \textbf{Selected nodes} & \textbf{CPU time (s)} \\
+		\textbf{Instance} & \textbf{Solution Cost} & \textbf{o.f. $-$ integer o.f.} & \textbf{Selected nodes} & \textbf{CPU time (s)} \\
 		\hline
-		1 & 2 & 2; 5 & 0.002 \\
+		1 & 2 & 0 ( 0 \% ) & 2; 5 & 0.000 \\
 		\hline
-		2 & 36 & 1; 5; 8; 10; 11 & 0.013 \\
+		2 & 36 & 11 ( 44 \%) & 1; 5; 8; 10; 11 & 0.000 \\
 		\hline
-		3 & 147 & 7; 8; 10; 14; 15; 16; 25; 26; 29; 34; 40 & 0.083 \\
+		3 & 147 & 18 (13.95 \%) &7; 8; 10; 14; 15; 16; 25; 26; 29; 34; 40 & 0.001 \\
 		\hline
-		4 & 287 & 1; 3; 10; 11; 12; 18; 23; 24; 25; 27; 29; 33; 53; 56; 57; 59; 62; 64; 71; 79; 80 & 0.599 \\
+		4 & 287 & 31 (12.11 \%) & 1; 3; 10; 11; 12; 18; 23; 24; 25; 27; 29; 33; 53; 56; 57; 59; 62; 64; 71; 79; 80 & 0.006 \\
 		\hline
 	\end{tabularx}
-	\caption{Results for each instance}
-	\label{tab:instance_costs}
 \end{table}
+
+Comparing with the solutions found in the previous section the heuristic solutions are close to the optimal.
+Espically for the two big instances 3 and 4 where the heuristic finds a solution that costs $\le 14\%$ of the optimal solution.
+And we gain a big improvement in computation time.
+The bottleneck of our code really is the precomputation of the reachability matrix which is magnitudes slower than the heuristic.
