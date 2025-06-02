@@ -32,9 +32,6 @@ for {inst in 1..4} {
 
 	let start_time := _ampl_time;
 
-    for {i in N, j in N: i != j} {
-            let d[i,j] := 999999;
-    }
     for {i in N} {
         let d[i,i] := 0;
     }
@@ -69,4 +66,9 @@ for {inst in 1..4} {
 	let end_time := _ampl_time;
 
     printf "objective function: %d ( %.3f s )\n", sum{i in N} y[i] * c[i], end_time - start_time;
+    printf "Selected nodes: ";
+    for {i in N: y[i] > 0.5} {
+        printf "%d ", i;
+    }
+    printf "\n";
 }
